@@ -42,12 +42,18 @@
 
 #include "stm32f4xx_hal_uart.h"
 
-uint16_t tempTestIntegerForCountingInterrupts_UART_RxCplt = 0;
-uint16_t tempTestIntegerForCountingInterrupts_DMA_Cplt = 0;
+volatile uint16_t tempTestIntegerForCountingInterrupts_UART_RxCplt = 0;
+volatile uint16_t tempTestIntegerForCountingInterrupts_DMA_Hlf_Cplt = 0;
+volatile uint16_t tempTestIntegerForCountingInterrupts_DMA_Cplt = 0;
 
-void receivedDataFromECUInterruptHandler(DMA_HandleTypeDef* hdma){
-	HAL_UART_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
+void receivedDataFromECUCompleteInterruptHandler(DMA_HandleTypeDef* hdma){
+//	UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
 	tempTestIntegerForCountingInterrupts_DMA_Cplt++;
+}
+
+void receivedDataFromECUHalfCompleteInterruptHandler(DMA_HandleTypeDef* hdma){
+//	UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
+	tempTestIntegerForCountingInterrupts_DMA_Hlf_Cplt++;
 }
 
 // Received data from ?ECU? and it's callback
@@ -62,8 +68,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
-DMA_HandleTypeDef hdma_usart1_tx;
+UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USART1 init function */
 
@@ -75,10 +82,26 @@ void MX_USART1_UART_Init(void)
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.Mode = UART_MODE_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
   HAL_UART_Init(&huart1);
+
+}
+/* USART2 init function */
+
+void MX_USART2_UART_Init(void)
+{
+
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 9600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  HAL_UART_Init(&huart2);
 
 }
 
@@ -90,7 +113,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   {
   /* USER CODE BEGIN USART1_MspInit 0 */
 
-	hdma_usart1_rx.XferCpltCallback = receivedDataFromECUInterruptHandler;
+	hdma_usart1_rx.XferCpltCallback = receivedDataFromECUCompleteInterruptHandler;
+	hdma_usart1_rx.XferHalfCpltCallback = receivedDataFromECUHalfCompleteInterruptHandler;
 
   /* USER CODE END USART1_MspInit 0 */
     /* Peripheral clock enable */
@@ -109,20 +133,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
     /* Peripheral DMA init*/
   
-    hdma_usart1_tx.Instance = DMA2_Stream7;
-    hdma_usart1_tx.Init.Channel = DMA_CHANNEL_4;
-    hdma_usart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_usart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_usart1_tx.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_usart1_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    hdma_usart1_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma_usart1_tx.Init.Mode = DMA_NORMAL;
-    hdma_usart1_tx.Init.Priority = DMA_PRIORITY_HIGH;
-    hdma_usart1_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    HAL_DMA_Init(&hdma_usart1_tx);
-
-    __HAL_LINKDMA(huart,hdmatx,hdma_usart1_tx);
-
     hdma_usart1_rx.Instance = DMA2_Stream2;
     hdma_usart1_rx.Init.Channel = DMA_CHANNEL_4;
     hdma_usart1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
@@ -144,6 +154,48 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 
   /* USER CODE END USART1_MspInit 1 */
   }
+  else if(huart->Instance==USART2)
+  {
+  /* USER CODE BEGIN USART2_MspInit 0 */
+
+  /* USER CODE END USART2_MspInit 0 */
+    /* Peripheral clock enable */
+    __USART2_CLK_ENABLE();
+  
+    /**USART2 GPIO Configuration    
+    PA2     ------> USART2_TX
+    PA3     ------> USART2_RX 
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* Peripheral DMA init*/
+  
+    hdma_usart2_tx.Instance = DMA1_Stream6;
+    hdma_usart2_tx.Init.Channel = DMA_CHANNEL_4;
+    hdma_usart2_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_usart2_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_usart2_tx.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_usart2_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_usart2_tx.Init.Mode = DMA_NORMAL;
+    hdma_usart2_tx.Init.Priority = DMA_PRIORITY_MEDIUM;
+    hdma_usart2_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    HAL_DMA_Init(&hdma_usart2_tx);
+
+    __HAL_LINKDMA(huart,hdmatx,hdma_usart2_tx);
+
+    /* Peripheral interrupt init*/
+    HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+  /* USER CODE BEGIN USART2_MspInit 1 */
+
+  /* USER CODE END USART2_MspInit 1 */
+  }
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
@@ -164,33 +216,62 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6|GPIO_PIN_7);
 
     /* Peripheral DMA DeInit*/
-    HAL_DMA_DeInit(huart->hdmatx);
     HAL_DMA_DeInit(huart->hdmarx);
 
     /* Peripheral interrupt Deinit*/
     HAL_NVIC_DisableIRQ(USART1_IRQn);
 
-  }
   /* USER CODE BEGIN USART1_MspDeInit 1 */
 
   /* USER CODE END USART1_MspDeInit 1 */
+  }
+  else if(huart->Instance==USART2)
+  {
+  /* USER CODE BEGIN USART2_MspDeInit 0 */
+
+  /* USER CODE END USART2_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __USART2_CLK_DISABLE();
+  
+    /**USART2 GPIO Configuration    
+    PA2     ------> USART2_TX
+    PA3     ------> USART2_RX 
+    */
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2|GPIO_PIN_3);
+
+    /* Peripheral DMA DeInit*/
+    HAL_DMA_DeInit(huart->hdmatx);
+
+    /* Peripheral interrupt Deinit*/
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
+
+  /* USER CODE BEGIN USART2_MspDeInit 1 */
+
+  /* USER CODE END USART2_MspDeInit 1 */
+  }
 } 
 
 /* USER CODE BEGIN 1 */
 
-void HAL_UART_TransmitData(uint8_t* data, uint16_t size){
-
-	  if (HAL_UART_Transmit_DMA(&huart1, data, size)!=HAL_OK){
+void UART2_TransmitData(volatile uint8_t* data, uint16_t size){
+	  HAL_UART_StateTypeDef state = huart2.State;
+	  while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_RX)){
+		  state = huart2.State;
+	  } //TODO jakos zrobic zeby bylo non-blocking
+	  volatile HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&huart2, (uint8_t*)data, size);
+	  if (status!=HAL_OK){
 		  while(1){
 			  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			  HAL_Delay(100);
 		  }
-
 	  }
-
 }
 
-void HAL_UART_ReceiveDataFromECU_DMA(ECUData* ecuData){
+void UART1_ReceiveDataFromECU_DMA(volatile ECUData* ecuData){
+	  HAL_UART_StateTypeDef state = huart1.State;
+	  while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_TX)){
+		  state = huart1.State;
+	  }	//TODO jakos zrobic zeby bylo non-blocking
 	  if (HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuData, sizeof(ECUData))!=HAL_OK){
 		  while(1){
 			  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);

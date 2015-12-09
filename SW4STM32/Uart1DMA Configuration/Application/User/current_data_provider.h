@@ -6,6 +6,6 @@
 #define MAX_CHANNEL_NUMBER 256
 
 void saveCurrentData(uint8_t channel, uint16_t value);
-uint16_t* getCurrentData();
+volatile uint16_t* getCurrentData();
 
 #endif /* __current_data_provider_H */

@@ -1,0 +1,4 @@
+﻿KIEDY NASTĘPUJE PRZERWANIE NA DMA - patrz HAL_DMA_IRQHandler
+KIEDY NASTĘPUJE PRZERWANIE NA UART??? - jest jedno przerwanie ale wiele źródeł ale jest flaga która definiuje które z nich nastąpiło: patrz HAL_UART_IRQHandler
+
+Trzeba sprawdzić w którym miejscu jest podmieniana funkcja obsługująca przerwanie DMATransferComplete hdma_usart1_rx.XferCpltCallback z receivedDataFromECUCompleteInterruptHandler na inną i w odpowiednim miejscu wstwaić odpowiedni kod, aby inkrementował licznik ECUDataReceivedIndex oraz wywyoływał czytanie po UARCIE w kółko. 

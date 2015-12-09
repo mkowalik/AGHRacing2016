@@ -86,15 +86,46 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
 
+
+  volatile ECUData* dataPointer = get_toReceiveECUDataPointer();
+
+  UART1_ReceiveDataFromECU_DMA(dataPointer);
+
+  volatile uint8_t transmited = 0;
+
+  while (1){
+	  if (dataPointer->channel==1 && dataPointer->idChar==0xA3){
+		  HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
+		  HAL_Delay(50);
+		  if (transmited==0){
+			  checkECUData_thread(NULL);
+			  saveActualData_thread(NULL);
+			  transmited++;
+		  }
+	  } else {
+//		  if (transmited==0){
+//			  saveActualData_thread(NULL);
+//			  transmited++;
+//		  }
+		  HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
+		  HAL_Delay(300);
+	  }
+  }
+
+  HAL_Delay(5000);
+  checkECUData_thread(NULL);
+  saveActualData_thread(NULL);
+
   char toSend[] = "alaMaKota\0";
-  HAL_UART_TransmitData((uint8_t*) toSend, strlen(toSend));
+  UART2_TransmitData((volatile uint8_t*) toSend, strlen(toSend));
 
   checkECUData_thread(NULL);
 
-  HAL_UART_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
+  UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
 
   /* USER CODE END 2 */
 

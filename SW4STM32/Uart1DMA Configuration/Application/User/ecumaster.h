@@ -20,9 +20,9 @@ typedef struct ECUDataStruct {
 
 void ecumaster_connection_init();
 void checkECUData_thread(void* args);
-uint16_t get_ECUDataReceivedIndex();
-uint16_t get_ECUDataToSaveIndex();
-ECUData* get_receivedECUData();
-ECUData* get_toReceiveECUDataPointer();
+volatile uint16_t get_ECUDataReceivedIndex();
+volatile uint16_t get_ECUDataToSaveIndex();
+volatile ECUData* get_receivedECUData();
+volatile ECUData* get_toReceiveECUDataPointer();
 
 #endif /* __ECUMASTER_H */

@@ -36,27 +36,27 @@
 #define ECU_CHANNEL_FUEL_LEVEL 30
 //#define ECU_CHANNEL_SECONDARY_PULSE_WIDTH 7
 
-ECUData receivedECUData[ECU_BUFFER_SIZE];
-uint16_t ECUDataToSaveIndex = 0;
-uint16_t ECUDataReceivedIndex = 0;
+volatile ECUData receivedECUData[ECU_BUFFER_SIZE];
+volatile uint16_t ECUDataToSaveIndex = 0;
+volatile uint16_t ECUDataReceivedIndex = 0;
 
 void ecumaster_connection_init(){
 
 }
 
-uint16_t get_ECUDataReceivedIndex(){
+volatile uint16_t get_ECUDataReceivedIndex(){
 	return ECUDataReceivedIndex;
 }
 
-uint16_t get_ECUDataToSaveIndex(){
+volatile uint16_t get_ECUDataToSaveIndex(){
 	return ECUDataToSaveIndex;
 }
 
-ECUData* get_receivedECUData(){
+volatile ECUData* get_receivedECUData(){
 	return receivedECUData;
 }
 
-ECUData* get_toReceiveECUDataPointer(){
+volatile ECUData* get_toReceiveECUDataPointer(){
 	return &(receivedECUData[ECUDataReceivedIndex]);
 }
 
