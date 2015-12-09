@@ -1,0 +1,1 @@
+Data Logger and Telemetry device for AGH Racing Team bolid based on STM32-F4Discovery Evaluation Board.
