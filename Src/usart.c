@@ -40,30 +40,7 @@
 
 /* USER CODE BEGIN 0 */
 
-#include "stm32f4xx_hal_uart.h"
-
-volatile uint16_t tempTestIntegerForCountingInterrupts_UART_RxCplt = 0;
-volatile uint16_t tempTestIntegerForCountingInterrupts_DMA_Hlf_Cplt = 0;
-volatile uint16_t tempTestIntegerForCountingInterrupts_DMA_Cplt = 0;
-
-void receivedDataFromECUCompleteInterruptHandler(DMA_HandleTypeDef* hdma){
-//	UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
-	tempTestIntegerForCountingInterrupts_DMA_Cplt++;
-}
-
-void receivedDataFromECUHalfCompleteInterruptHandler(DMA_HandleTypeDef* hdma){
-//	UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
-	tempTestIntegerForCountingInterrupts_DMA_Hlf_Cplt++;
-}
-
-// Received data from ?ECU? and it's callback
-// Probably after every 8 bits
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-	//TODO is this after receiving all the data or only after one message
-	//all the message
-//	HAL_UART_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
-	tempTestIntegerForCountingInterrupts_UART_RxCplt++;
-}
+#include "ecumaster.h"
 
 /* USER CODE END 0 */
 
@@ -113,9 +90,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   {
   /* USER CODE BEGIN USART1_MspInit 0 */
 
-	hdma_usart1_rx.XferCpltCallback = receivedDataFromECUCompleteInterruptHandler;
-	hdma_usart1_rx.XferHalfCpltCallback = receivedDataFromECUHalfCompleteInterruptHandler;
-
   /* USER CODE END USART1_MspInit 0 */
     /* Peripheral clock enable */
     __USART1_CLK_ENABLE();
@@ -140,7 +114,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     hdma_usart1_rx.Init.MemInc = DMA_MINC_ENABLE;
     hdma_usart1_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
     hdma_usart1_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma_usart1_rx.Init.Mode = DMA_NORMAL;
+    hdma_usart1_rx.Init.Mode = DMA_CIRCULAR;
     hdma_usart1_rx.Init.Priority = DMA_PRIORITY_HIGH;
     hdma_usart1_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     HAL_DMA_Init(&hdma_usart1_rx);
@@ -267,12 +241,16 @@ void UART2_TransmitData(volatile uint8_t* data, uint16_t size){
 	  }
 }
 
-void UART1_ReceiveDataFromECU_DMA(volatile ECUData* ecuData){
+void UART1_ReceiveDataFromECU_DMA(volatile uint8_t* ecuData){
 	  HAL_UART_StateTypeDef state = huart1.State;
 	  while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_TX)){
 		  state = huart1.State;
 	  }	//TODO jakos zrobic zeby bylo non-blocking
-	  if (HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuData, sizeof(ECUData))!=HAL_OK){
+
+	    /* Enable the UART Data Register not empty Interrupt */
+	  HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, ecuData, ECU_BUFFER_SIZE);
+	  __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+	  if (status!=HAL_OK){
 		  while(1){
 			  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			  HAL_Delay(100);

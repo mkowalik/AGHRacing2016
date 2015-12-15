@@ -95,20 +95,14 @@ int main(void)
 
   UART1_ReceiveDataFromECU_DMA(dataPointer);
 
-  volatile uint8_t transmited = 0;
-
   while (1){
 	  if (dataPointer->channel==1 && dataPointer->idChar==0xA3){
 		  HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-		  HAL_Delay(50);
-		  if (transmited==0){
-			  saveActualData_thread(NULL);
-			  transmited++;
-		  }
-	  } else {
-		  HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-		  HAL_Delay(300);
 	  }
+	  checkECUData_thread(NULL);
+	  saveActualData_thread(NULL);
+	  HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
+	  HAL_Delay(300);
   }
 
   HAL_Delay(5000);

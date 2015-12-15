@@ -36,7 +36,7 @@
 #include "stm32f4xx_it.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "ecumaster.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -88,10 +88,21 @@ void DMA1_Stream6_IRQHandler(void)
 /**
 * @brief This function handles USART1 global interrupt.
 */
+
+volatile int tempCounter = 0;
+
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 
+	uint32_t uartItSource = __HAL_UART_GET_IT_SOURCE(&huart1, UART_IT_RXNE);
+	HAL_DMA_StateTypeDef dmaState = HAL_DMA_GetState(&hdma_usart1_rx);
+	  /* UART in mode Receiver ---------------------------------------------------*/
+	tempCounter++;
+	if((uartItSource != RESET) && (dmaState & (HAL_DMA_STATE_BUSY | HAL_DMA_STATE_READY))){
+		receivedDataByteNotification();
+		return;
+	}
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */

@@ -58,8 +58,9 @@ void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void HAL_UART_RxHalfCpltCallback(UART_HandleTypeDef *huart);
 void UART2_TransmitData(volatile uint8_t* data, uint16_t size);
-void UART1_ReceiveDataFromECU_DMA(volatile ECUData* ecuData);
+void UART1_ReceiveDataFromECU_DMA(volatile uint8_t* ecuData);
 
 /* USER CODE END Prototypes */
 

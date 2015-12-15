@@ -36,12 +36,12 @@
 #define ECU_CHANNEL_FUEL_LEVEL 30
 //#define ECU_CHANNEL_SECONDARY_PULSE_WIDTH 7
 
-volatile ECUData receivedECUData[ECU_BUFFER_SIZE];
-volatile uint16_t ECUDataToSaveIndex = 0;
-volatile uint16_t ECUDataReceivedIndex = 0;
+static volatile uint8_t receivedECUData[ECU_BUFFER_SIZE];
+static volatile uint16_t ECUDataToSaveIndex = 0;
+static volatile uint16_t ECUDataReceivedIndex = 0;
 
-void ecumaster_connection_init(){
-
+void receivedDataByteNotification(){
+	ECUDataReceivedIndex++;
 }
 
 volatile uint16_t get_ECUDataReceivedIndex(){
@@ -52,23 +52,33 @@ volatile uint16_t get_ECUDataToSaveIndex(){
 	return ECUDataToSaveIndex;
 }
 
-volatile ECUData* get_receivedECUData(){
+volatile uint8_t* get_receivedECUDataTab(){
 	return receivedECUData;
 }
 
-volatile ECUData* get_toReceiveECUDataPointer(){
+volatile uint8_t* get_toReceiveECUDataPointer(){
 	return &(receivedECUData[ECUDataReceivedIndex]);
 }
 
-ECUData get_actualReceivedData(){
-	return receivedECUData[ECUDataToSaveIndex];
-}
-
 void checkECUData_thread(void* args){
-	while (ECUDataToSaveIndex < ECUDataReceivedIndex){
-		ECUData actECUFrame = receivedECUData[ECUDataToSaveIndex%ECU_BUFFER_SIZE];
+	while (ECUDataToSaveIndex + BYTES_IN_ECU_FRAME <= ECUDataReceivedIndex){
 
-		uint8_t loggedDataChannel;
+		ECUData actECUFrame;
+
+		actECUFrame.channel = receivedECUData[(ECUDataToSaveIndex+0) % ECU_BUFFER_SIZE];
+		actECUFrame.idChar = receivedECUData[(ECUDataToSaveIndex+1) % ECU_BUFFER_SIZE];
+		actECUFrame.valueH = receivedECUData[(ECUDataToSaveIndex+2) % ECU_BUFFER_SIZE];
+		actECUFrame.valueL = receivedECUData[(ECUDataToSaveIndex+3) % ECU_BUFFER_SIZE];
+		actECUFrame.checksum = receivedECUData[(ECUDataToSaveIndex+4) % ECU_BUFFER_SIZE];
+
+		uint8_t checksum = (actECUFrame.channel + actECUFrame.idChar + actECUFrame.valueH + actECUFrame.valueL) % 255;
+
+		if ((actECUFrame.idChar != ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
+			ECUDataToSaveIndex++;
+			continue;
+		}
+
+		uint8_t loggedDataChannel = 0;
 
 		switch (actECUFrame.channel){
 			case ECU_CHANNEL_RPM:
@@ -171,6 +181,7 @@ void checkECUData_thread(void* args){
 //				loggedDataChannel =
 		}
 		saveCurrentData(loggedDataChannel, actECUFrame.value);
+		ECUDataToSaveIndex+=5;
 		if (ECUDataToSaveIndex>ECU_BUFFER_SIZE){
 			ECUDataToSaveIndex-=ECU_BUFFER_SIZE;
 			ECUDataReceivedIndex-=ECU_BUFFER_SIZE;

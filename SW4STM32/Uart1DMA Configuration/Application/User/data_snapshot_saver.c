@@ -4,7 +4,7 @@
 #include "logged_data_types.h"
 #include <string.h>
 
-uint16_t savedSnapshots[MAX_CHANNEL_NUMBER][MAX_SNAPSHOT_NUMBER];
+volatile uint16_t savedSnapshots[MAX_CHANNEL_NUMBER][MAX_SNAPSHOT_NUMBER];
 
 void saveActualData_thread(void* args){
 

@@ -24,7 +24,8 @@ Application/User/stm32f4xx_it.o: \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../../../Inc/stm32f4xx_it.h
+ ../../../Inc/stm32f4xx_it.h \
+ D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -77,3 +78,5 @@ Application/User/stm32f4xx_it.o: \
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
 ../../../Inc/stm32f4xx_it.h:
+
+D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
