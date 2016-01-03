@@ -1,5 +1,5 @@
 Drivers/CMSIS/system_stm32f4xx.o: \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h \
  ../../../Drivers/CMSIS/Include/core_cm4.h \

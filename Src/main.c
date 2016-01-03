@@ -91,27 +91,32 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  volatile uint8_t* dataPointer = get_toReceiveECUDataPointer();
+  volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
 
   UART1_ReceiveDataFromECU_DMA(dataPointer);
 
+  volatile int tempCounter = 0;
+
   while (1){
-	  checkECUData_thread(NULL);
-	  saveActualData_thread(NULL);
-	  HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-	  HAL_Delay(300);
+	  ECU_saveCurrentData_thread(NULL);
+      if (tempCounter%10 == 0){
+          saveActualData_thread(NULL);
+          HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
+      }
+      tempCounter++;
+      HAL_Delay(30);
   }
 
   HAL_Delay(5000);
-  checkECUData_thread(NULL);
+  ECU_saveCurrentData_thread(NULL);
   saveActualData_thread(NULL);
 
   char toSend[] = "alaMaKota\0";
   UART2_TransmitData((volatile uint8_t*) toSend, strlen(toSend));
 
-  checkECUData_thread(NULL);
+  ECU_saveCurrentData_thread(NULL);
 
-  UART1_ReceiveDataFromECU_DMA(get_toReceiveECUDataPointer());
+  UART1_ReceiveDataFromECU_DMA(ECU_getNextReceivedBytePointer());
 
   /* USER CODE END 2 */
 

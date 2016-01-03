@@ -4,14 +4,14 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 S_SRCS += \
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s 
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s 
 
 OBJS += \
 ./Application/SW4STM32/startup_stm32f407xx.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-Application/SW4STM32/startup_stm32f407xx.o: D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s
+Application/SW4STM32/startup_stm32f407xx.o: D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Assembler'
 	@echo %cd%

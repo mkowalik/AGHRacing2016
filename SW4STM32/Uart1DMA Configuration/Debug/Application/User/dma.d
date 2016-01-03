@@ -1,5 +1,5 @@
-Application/User/dma.o: \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Src/dma.c ../../../Inc/dma.h \
+Application/User/dma.o: D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/dma.c \
+ ../../../Inc/dma.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \

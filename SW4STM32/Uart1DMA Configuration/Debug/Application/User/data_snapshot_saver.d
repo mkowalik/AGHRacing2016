@@ -26,7 +26,7 @@ Application/User/data_snapshot_saver.o: \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h \
  ../Application/User/logged_data_types.h
 
 ../Application/User/data_snapshot_saver.h:
@@ -85,6 +85,6 @@ Application/User/data_snapshot_saver.o: \
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
 
 ../Application/User/logged_data_types.h:

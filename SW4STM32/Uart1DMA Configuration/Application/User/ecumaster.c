@@ -36,45 +36,45 @@
 #define ECU_CHANNEL_FUEL_LEVEL 30
 //#define ECU_CHANNEL_SECONDARY_PULSE_WIDTH 7
 
-static volatile uint8_t receivedECUData[ECU_BUFFER_SIZE];
-static volatile uint16_t ECUDataToSaveIndex = 0;
-static volatile uint16_t ECUDataReceivedIndex = 0;
+static volatile uint8_t receivedECUBytes[ECU_BUFFER_SIZE];
+static volatile uint16_t ECUDataLeftIndex = 0;
+static volatile uint16_t ECUDataRightIndex = 0;
 
-void receivedDataByteNotification(){
-	ECUDataReceivedIndex++;
+void ECU_receivedByteNotification(){
+	ECUDataRightIndex++;
 }
 
-volatile uint16_t get_ECUDataReceivedIndex(){
-	return ECUDataReceivedIndex;
+volatile uint16_t ECU_getBytesRightIndex(){
+	return ECUDataRightIndex;
 }
 
-volatile uint16_t get_ECUDataToSaveIndex(){
-	return ECUDataToSaveIndex;
+volatile uint16_t ECU_getBytesLeftIndex(){
+	return ECUDataLeftIndex;
 }
 
-volatile uint8_t* get_receivedECUDataTab(){
-	return receivedECUData;
+volatile uint8_t* ECU_getReceivedBytesTab(){
+	return receivedECUBytes;
 }
 
-volatile uint8_t* get_toReceiveECUDataPointer(){
-	return &(receivedECUData[ECUDataReceivedIndex]);
+volatile uint8_t* ECU_getNextReceivedBytePointer(){
+	return &(receivedECUBytes[ECUDataRightIndex]);
 }
 
-void checkECUData_thread(void* args){
-	while (ECUDataToSaveIndex + BYTES_IN_ECU_FRAME <= ECUDataReceivedIndex){
+void ECU_saveCurrentData_thread(void* args){
+	while (ECUDataLeftIndex + BYTES_IN_ECU_FRAME <= ECUDataRightIndex){
 
 		ECUData actECUFrame;
 
-		actECUFrame.channel = receivedECUData[(ECUDataToSaveIndex+0) % ECU_BUFFER_SIZE];
-		actECUFrame.idChar = receivedECUData[(ECUDataToSaveIndex+1) % ECU_BUFFER_SIZE];
-		actECUFrame.valueH = receivedECUData[(ECUDataToSaveIndex+2) % ECU_BUFFER_SIZE];
-		actECUFrame.valueL = receivedECUData[(ECUDataToSaveIndex+3) % ECU_BUFFER_SIZE];
-		actECUFrame.checksum = receivedECUData[(ECUDataToSaveIndex+4) % ECU_BUFFER_SIZE];
+		actECUFrame.channel = receivedECUBytes[(ECUDataLeftIndex+0) % ECU_BUFFER_SIZE];
+		actECUFrame.idChar = receivedECUBytes[(ECUDataLeftIndex+1) % ECU_BUFFER_SIZE];
+		actECUFrame.valueH = receivedECUBytes[(ECUDataLeftIndex+2) % ECU_BUFFER_SIZE];
+		actECUFrame.valueL = receivedECUBytes[(ECUDataLeftIndex+3) % ECU_BUFFER_SIZE];
+		actECUFrame.checksum = receivedECUBytes[(ECUDataLeftIndex+4) % ECU_BUFFER_SIZE];
 
-		uint8_t checksum = (actECUFrame.channel + actECUFrame.idChar + actECUFrame.valueH + actECUFrame.valueL) % 255;
+		uint8_t checksum = ((uint16_t)actECUFrame.channel + actECUFrame.idChar + actECUFrame.valueH + actECUFrame.valueL) % 256;
 
 		if ((actECUFrame.idChar != ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
-			ECUDataToSaveIndex++;
+			ECUDataLeftIndex++;
 			continue;
 		}
 
@@ -180,11 +180,15 @@ void checkECUData_thread(void* args){
 //			case ECU_CHANNEL_SECONDARY_PULSE_WIDTH:
 //				loggedDataChannel =
 		}
+
 		saveCurrentData(loggedDataChannel, actECUFrame.value);
-		ECUDataToSaveIndex+=5;
-		if (ECUDataToSaveIndex>ECU_BUFFER_SIZE){
-			ECUDataToSaveIndex-=ECU_BUFFER_SIZE;
-			ECUDataReceivedIndex-=ECU_BUFFER_SIZE;
+
+		ECUDataLeftIndex+=5;
+
+		if (ECUDataLeftIndex>ECU_BUFFER_SIZE){
+			ECUDataLeftIndex-=ECU_BUFFER_SIZE;
+			ECUDataRightIndex-=ECU_BUFFER_SIZE;
 		}
+
 	}
 }

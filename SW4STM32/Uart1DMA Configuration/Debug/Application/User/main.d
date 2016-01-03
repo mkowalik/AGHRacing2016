@@ -1,5 +1,5 @@
 Application/User/main.o: \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Src/main.c \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/main.c \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -25,10 +25,10 @@ Application/User/main.o: \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../../../Inc/dma.h ../../../Inc/usart.h \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h \
  ../../../Inc/gpio.h ../../../Inc/mxconstants.h \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/current_data_provider.h \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/data_snapshot_saver.h
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/current_data_provider.h \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/data_snapshot_saver.h
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -84,12 +84,12 @@ Application/User/main.o: \
 
 ../../../Inc/usart.h:
 
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
 
 ../../../Inc/gpio.h:
 
 ../../../Inc/mxconstants.h:
 
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/current_data_provider.h:
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/current_data_provider.h:
 
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/data_snapshot_saver.h:
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/data_snapshot_saver.h:

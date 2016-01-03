@@ -8,8 +8,8 @@ typedef struct {
 	uint8_t idChar;
 	union {
 		struct {
-			uint8_t valueH;
 			uint8_t valueL;
+			uint8_t valueH;
 		};
 		uint16_t value;
 	};
@@ -17,14 +17,14 @@ typedef struct {
 } ECUData;
 
 #define BYTES_IN_ECU_FRAME 	5
-#define ECU_BUFFER_SIZE 	(32 * BYTES_IN_ECU_FRAME)
+#define ECU_BUFFER_SIZE 	(256 * BYTES_IN_ECU_FRAME)
 #define ID_CHAR_VALUE		0xA3
 
-void receivedDataByteNotification();
-volatile uint16_t get_ECUDataReceivedIndex();
-volatile uint16_t get_ECUDataToSaveIndex();
-volatile uint8_t* get_receivedECUDataTab();
-volatile uint8_t* get_toReceiveECUDataPointer();
-void checkECUData_thread(void* args);
+void ECU_receivedByteNotification();
+volatile uint16_t ECU_getBytesRightIndex();
+volatile uint16_t ECU_getBytesLeftIndex();
+volatile uint8_t* ECU_getReceivedBytesTab();
+volatile uint8_t* ECU_getNextReceivedBytePointer();
+void ECU_saveCurrentData_thread(void* args);
 
 #endif /* __ECUMASTER_H */

@@ -1,5 +1,5 @@
 Application/User/stm32f4xx_it.o: \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/Src/stm32f4xx_it.c \
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/stm32f4xx_it.c \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -25,7 +25,7 @@ Application/User/stm32f4xx_it.o: \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../../../Inc/stm32f4xx_it.h \
- D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h
+ D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -79,4 +79,4 @@ Application/User/stm32f4xx_it.o: \
 
 ../../../Inc/stm32f4xx_it.h:
 
-D:/Dropbox/AGH\ Racing/Uart1DMA/Uart1DMA/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/SW4STM32/Uart1DMA\ Configuration/Application/User/ecumaster.h:
