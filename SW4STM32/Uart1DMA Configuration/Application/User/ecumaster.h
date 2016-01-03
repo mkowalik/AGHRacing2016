@@ -25,6 +25,6 @@ volatile uint16_t ECU_getBytesRightIndex();
 volatile uint16_t ECU_getBytesLeftIndex();
 volatile uint8_t* ECU_getReceivedBytesTab();
 volatile uint8_t* ECU_getNextReceivedBytePointer();
-void ECU_saveCurrentData_thread(void* args);
+void ECU_saveCurrentData(void const * args);
 
 #endif /* __ECUMASTER_H */

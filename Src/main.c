@@ -4,7 +4,7 @@
   * Description        : Main program body
   ******************************************************************************
   *
-  * COPYRIGHT(c) 2015 STMicroelectronics
+  * COPYRIGHT(c) 2016 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "cmsis_os.h"
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
@@ -55,6 +56,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -90,49 +92,24 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
-
   UART1_ReceiveDataFromECU_DMA(dataPointer);
-
-  volatile int tempCounter = 0;
-
-  while (1){
-	  ECU_saveCurrentData_thread(NULL);
-      if (tempCounter%10 == 0){
-          saveActualData_thread(NULL);
-          HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-      }
-      tempCounter++;
-      HAL_Delay(30);
-  }
-
-  HAL_Delay(5000);
-  ECU_saveCurrentData_thread(NULL);
-  saveActualData_thread(NULL);
-
-  char toSend[] = "alaMaKota\0";
-  UART2_TransmitData((volatile uint8_t*) toSend, strlen(toSend));
-
-  ECU_saveCurrentData_thread(NULL);
-
-  UART1_ReceiveDataFromECU_DMA(ECU_getNextReceivedBytePointer());
 
   /* USER CODE END 2 */
 
+  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+  
+  /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
-	  HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);
-	  HAL_Delay(500);
-	  saveActualData_thread(NULL);
-
-  }
   /* USER CODE END 3 */
 
 }

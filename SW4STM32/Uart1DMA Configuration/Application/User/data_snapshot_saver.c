@@ -6,7 +6,7 @@
 
 volatile uint16_t savedSnapshots[MAX_CHANNEL_NUMBER][MAX_SNAPSHOT_NUMBER];
 
-void saveActualData_thread(void* args){
+void saveActualData(void const* args){
 
 	const uint16_t size = 3;
 	volatile uint8_t parameters[] = {ECU_RPM, ECU_TPS, ECU_BATT};

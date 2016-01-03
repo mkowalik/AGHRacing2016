@@ -3,6 +3,6 @@
 
 #define MAX_SNAPSHOT_NUMBER 10
 
-void saveActualData_thread(void* args);
+void saveActualData(void const* args);
 
 #endif /* __data_snapshot_saver_H */

@@ -60,7 +60,7 @@ volatile uint8_t* ECU_getNextReceivedBytePointer(){
 	return &(receivedECUBytes[ECUDataRightIndex]);
 }
 
-void ECU_saveCurrentData_thread(void* args){
+void ECU_saveCurrentData(void const * args){
 	while (ECUDataLeftIndex + BYTES_IN_ECU_FRAME <= ECUDataRightIndex){
 
 		ECUData actECUFrame;
