@@ -137,7 +137,7 @@ void StartSaveActualDataTask(void const * argument){
 
 	while (1){
 		saveActualData(argument);
-		osDelayUntil((uint32_t*) &xLastWakeTime, 10);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 100);
 	}
 }
 
@@ -147,7 +147,7 @@ void StartSaveActualBytesFromECUTask(void const * argument){
 
 	while (1){
 		ECU_saveCurrentData(argument);
-		osDelayUntil((uint32_t*) &xLastWakeTime, 1);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 2);
 	}
 
 }
@@ -156,7 +156,7 @@ void StartLedBlinkingTask(void const * argument){
 
 	while (1){
 	    HAL_GPIO_TogglePin(LD5_GPIO_Port, LD5_Pin);
-	    osDelay(100);
+	    osDelay(200);
 	}
 
 

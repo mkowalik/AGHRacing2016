@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
+D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c \
@@ -20,6 +21,7 @@ D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4x
 
 OBJS += \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal.o \
+./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_can.o \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_cortex.o \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_dma.o \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_dma_ex.o \
@@ -35,6 +37,7 @@ OBJS += \
 
 C_DEPS += \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal.d \
+./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_can.d \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_cortex.d \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_dma.d \
 ./Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_dma_ex.d \
@@ -55,6 +58,14 @@ Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal.o: D:/Dropbox/AGH\ Racing/AGHRacingLo
 	@echo 'Invoking: MCU GCC Compiler'
 	@echo %cd%
 	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F407xx -I../../../Inc -I"D:/Dropbox/AGH Racing/AGHRacingLogger/SW4STM32/Uart1DMA Configuration/Application/User" -I../../../Drivers/STM32F4xx_HAL_Driver/Inc -I../../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../../Drivers/CMSIS/Include -I../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../../Inc -I../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../../../Middlewares/Third_Party/FreeRTOS/Source/include -I../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -O0 -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal.d" -MT"$@" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_can.o: D:/Dropbox/AGH\ Racing/AGHRacingLogger/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c
+	@echo 'Building file: $<'
+	@echo 'Invoking: MCU GCC Compiler'
+	@echo %cd%
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -D__weak="__attribute__((weak))" -D__packed="__attribute__((__packed__))" -DUSE_HAL_DRIVER -DSTM32F407xx -I../../../Inc -I"D:/Dropbox/AGH Racing/AGHRacingLogger/SW4STM32/Uart1DMA Configuration/Application/User" -I../../../Drivers/STM32F4xx_HAL_Driver/Inc -I../../../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../../../Drivers/CMSIS/Include -I../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../../../Inc -I../../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F -I../../../Middlewares/Third_Party/FreeRTOS/Source/include -I../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -O0 -g3 -Wall -fmessage-length=0 -ffunction-sections -c -fmessage-length=0 -MMD -MP -MF"Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_can.d" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
