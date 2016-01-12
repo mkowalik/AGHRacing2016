@@ -1,6 +1,8 @@
 #ifndef __logged_data_types_H
 #define __logged_data_types_H
 
+#include <stdint.h>
+
 #define ECU_RPM 1
 #define ECU_MAP_SENSOR 2
 #define ECU_TPS 3
@@ -34,5 +36,26 @@
 #define ECU_DELTA_FPR 29
 #define ECU_FUEL_LEVEL 30
 //#define ECU_SECONDARY_PULSE_WIDTH 7
+
+#define CHANNEL_NUMBER 256
+
+typedef enum {
+	DATA_NO_ALERT					= 0x00,
+	DATA_ONLY_HIGH_VALUE_ALERT		= 0x01,
+	DATA_ONLY_LOW_VALUE_ALERT		= 0x02,
+	DATA_HIGH_AND_LOW_VALUE_ALERT	= 0x03
+} DataTypes_AlertModeTypeDef;
+
+uint8_t DataTypes_divider[CHANNEL_NUMBER];
+uint16_t DataTypes_gaugeDivider[CHANNEL_NUMBER];
+uint16_t DataTypes_gaugeMinValue[CHANNEL_NUMBER];
+uint16_t DataTypes_gaugeMaxValue[CHANNEL_NUMBER];
+DataTypes_AlertModeTypeDef DataTypes_AlertMode[CHANNEL_NUMBER];
+uint16_t DataTypes_lowAlert[CHANNEL_NUMBER];
+uint16_t DataTypes_highAlert[CHANNEL_NUMBER];
+char* DataTypes_unitString[CHANNEL_NUMBER];
+char* DataTypes_fullName[CHANNEL_NUMBER];
+
+void DataTypes_initDefaults();
 
 #endif /* __logged_data_types_H */

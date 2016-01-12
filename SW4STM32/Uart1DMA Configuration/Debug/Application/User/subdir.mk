@@ -6,11 +6,13 @@
 C_SRCS += \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/can.c \
 ../Application/User/current_data_provider.c \
+../Application/User/dashboard.c \
 ../Application/User/data_snapshot_saver.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/dma.c \
 ../Application/User/ecumaster.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/freertos.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/gpio.c \
+../Application/User/logged_data_types.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/main.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/stm32f4xx_hal_msp.c \
 D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/stm32f4xx_it.c \
@@ -19,11 +21,13 @@ D:/Dropbox/AGH\ Racing/AGHRacingLogger/Src/usart.c
 OBJS += \
 ./Application/User/can.o \
 ./Application/User/current_data_provider.o \
+./Application/User/dashboard.o \
 ./Application/User/data_snapshot_saver.o \
 ./Application/User/dma.o \
 ./Application/User/ecumaster.o \
 ./Application/User/freertos.o \
 ./Application/User/gpio.o \
+./Application/User/logged_data_types.o \
 ./Application/User/main.o \
 ./Application/User/stm32f4xx_hal_msp.o \
 ./Application/User/stm32f4xx_it.o \
@@ -32,11 +36,13 @@ OBJS += \
 C_DEPS += \
 ./Application/User/can.d \
 ./Application/User/current_data_provider.d \
+./Application/User/dashboard.d \
 ./Application/User/data_snapshot_saver.d \
 ./Application/User/dma.d \
 ./Application/User/ecumaster.d \
 ./Application/User/freertos.d \
 ./Application/User/gpio.d \
+./Application/User/logged_data_types.d \
 ./Application/User/main.d \
 ./Application/User/stm32f4xx_hal_msp.d \
 ./Application/User/stm32f4xx_it.d \
