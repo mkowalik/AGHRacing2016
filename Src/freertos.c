@@ -139,7 +139,7 @@ void StartSaveActualDataTask(void const * argument){
 	TickType_t xLastWakeTime = osKernelSysTick();
 
 	while (1){
-		saveActualData(argument);
+		Telemetry_sendActualData(argument);
 		osDelayUntil((uint32_t*) &xLastWakeTime, 100);
 	}
 }

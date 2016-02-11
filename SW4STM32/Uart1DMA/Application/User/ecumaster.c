@@ -182,7 +182,6 @@ void ECU_saveCurrentData(void const * args){
 		}
 
 		saveCurrentData(loggedDataChannel, actECUFrame.value);
-		dash_displayCurrentData(loggedDataChannel, actECUFrame.value);
 
 		ECUDataLeftIndex+=5;
 

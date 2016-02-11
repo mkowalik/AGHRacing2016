@@ -1,12 +1,10 @@
-#include "data_snapshot_saver.h"
+#include "telemetry.h"
 #include "current_data_provider.h"
 #include "usart.h"
 #include "logged_data_types.h"
 #include <string.h>
 
-volatile uint16_t savedSnapshots[CHANNEL_NUMBER][MAX_SNAPSHOT_NUMBER];
-
-void saveActualData(void const* args){
+void Telemetry_sendActualData(void const* args){
 
 	const uint16_t size = 3;
 	volatile uint8_t parameters[] = {ECU_RPM, ECU_TPS, ECU_BATT};
