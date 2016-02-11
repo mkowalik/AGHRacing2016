@@ -228,9 +228,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 /* USER CODE BEGIN 1 */
 
 void UART2_TransmitData(volatile uint8_t* data, uint16_t size){
-	  HAL_UART_StateTypeDef state = huart2.State;
+	  HAL_UART_StateTypeDef state = huart2.gState;
 	  while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_RX)){
-		  state = huart2.State;
+		  state = huart2.gState;
 	  } //TODO jakos zrobic zeby bylo non-blocking
 	  volatile HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(&huart2, (uint8_t*)data, size);
 	  if (status!=HAL_OK){
@@ -242,9 +242,9 @@ void UART2_TransmitData(volatile uint8_t* data, uint16_t size){
 }
 
 void UART1_ReceiveDataFromECU_DMA(volatile uint8_t* ecuData){
-	  HAL_UART_StateTypeDef state = huart1.State;
+	  HAL_UART_StateTypeDef state = huart1.gState;
 	  while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_TX)){
-		  state = huart1.State;
+		  state = huart1.gState;
 	  }	//TODO jakos zrobic zeby bylo non-blocking
 
 	    /* Enable the UART Data Register not empty Interrupt */
