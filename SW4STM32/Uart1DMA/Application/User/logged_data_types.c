@@ -24,7 +24,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMinValue[ECU_RPM]= 0;
 	DataTypes_gaugeMaxValue[ECU_RPM]= 9000;
 	DataTypes_unitString[ECU_RPM]= "RPM";
-	DataTypes_fullName[ECU_RPM]= "";
+	DataTypes_fullName[ECU_RPM]= "ECU_RPM";
 	DataTypes_highAlert[ECU_RPM]= 8500;
 	DataTypes_AlertMode[ECU_RPM]= DATA_ONLY_HIGH_VALUE_ALERT;
 
@@ -33,7 +33,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMinValue[ECU_MAP_SENSOR]= 0;
 	DataTypes_gaugeMaxValue[ECU_MAP_SENSOR]= 400;
 	DataTypes_unitString[ECU_MAP_SENSOR]= "kPa";
-	DataTypes_fullName[ECU_MAP_SENSOR]= "";
+	DataTypes_fullName[ECU_MAP_SENSOR]= "ECU_MAP_SENSOR";
 	DataTypes_highAlert[ECU_MAP_SENSOR]= 300;
 	DataTypes_AlertMode[ECU_MAP_SENSOR]= DATA_ONLY_HIGH_VALUE_ALERT;
 
@@ -42,14 +42,14 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMinValue[ECU_TPS]= 0;
 	DataTypes_gaugeMaxValue[ECU_TPS]= 100;
 	DataTypes_unitString[ECU_TPS]= "%";
-	DataTypes_fullName[ECU_TPS]= "";
+	DataTypes_fullName[ECU_TPS]= "ECU_TPS";
 
 	DataTypes_divider[ECU_IAT]= 1;
 	DataTypes_gaugeDivider[ECU_IAT]= 1;
 	DataTypes_gaugeMinValue[ECU_IAT]= -40;
 	DataTypes_gaugeMaxValue[ECU_IAT]= 120;
 	DataTypes_unitString[ECU_IAT]= "C";
-	DataTypes_fullName[ECU_IAT]= "";
+	DataTypes_fullName[ECU_IAT]= "ECU_IAT";
 
 	DataTypes_divider[ECU_BATT]= 37;
 	DataTypes_gaugeDivider[ECU_BATT]= 1;
@@ -213,7 +213,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMinValue[ECU_CLT]= -40;
 	DataTypes_gaugeMaxValue[ECU_CLT]= 220;
 	DataTypes_unitString[ECU_CLT]= "C";
-	DataTypes_fullName[ECU_CLT]= "";
+	DataTypes_fullName[ECU_CLT]= "ECU_CLT";
 	DataTypes_highAlert[ECU_CLT]= 105;
 	DataTypes_AlertMode[ECU_CLT]= DATA_ONLY_HIGH_VALUE_ALERT;
 
