@@ -1,0 +1,6 @@
+1. Uruchomiæ program Eagle
+2. Wybraæ z menu Options->Directories...
+3. Dodaæ do pola Libraries œcie¿kê do folderu 'my_lbr',
+	np. "$EAGLEDIR\lbr;E:\AGH Racing\GitRepo\STM32F042_Eval_Board\hardware\my_lbr"
+4. Dodaæ do pola Projects œcie¿kê do folderu 'my_projects',
+	np. "$EAGLEDIR\projects\examples;E:\AGH Racing\GitRepo\STM32F042_Eval_Board\hardware\my_projects"
