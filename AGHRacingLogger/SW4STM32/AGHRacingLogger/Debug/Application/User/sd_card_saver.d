@@ -1,9 +1,6 @@
 Application/User/sd_card_saver.o: ../Application/User/sd_card_saver.c \
  ../Application/User/sd_card_saver.h \
  ../Application/User/logged_data_types.h \
- ../../../Middlewares/Third_Party/FatFs/src/ff.h \
- ../../../Middlewares/Third_Party/FatFs/src/integer.h \
- ../../../Inc/ffconf.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -36,6 +33,9 @@ Application/User/sd_card_saver.o: ../Application/User/sd_card_saver.c \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../../../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../../../Middlewares/Third_Party/FatFs/src/integer.h \
+ ../../../Inc/ffconf.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h \
  ../../../Drivers/CMSIS/Include/core_cmFunc.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -55,17 +55,11 @@ Application/User/sd_card_saver.o: ../Application/User/sd_card_saver.c \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
  ../../../Inc/bsp_driver_sd.h ../Application/User/data_snapshot_maker.h \
- ../Application/User/itoa.h
+ ../Application/User/itoa.h ../../../Inc/mxconstants.h
 
 ../Application/User/sd_card_saver.h:
 
 ../Application/User/logged_data_types.h:
-
-../../../Middlewares/Third_Party/FatFs/src/ff.h:
-
-../../../Middlewares/Third_Party/FatFs/src/integer.h:
-
-../../../Inc/ffconf.h:
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -133,6 +127,12 @@ Application/User/sd_card_saver.o: ../Application/User/sd_card_saver.c \
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
+../../../Middlewares/Third_Party/FatFs/src/ff.h:
+
+../../../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../../../Inc/ffconf.h:
+
 ../../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h:
 
 ../../../Drivers/CMSIS/Include/core_cmFunc.h:
@@ -174,3 +174,5 @@ Application/User/sd_card_saver.o: ../Application/User/sd_card_saver.c \
 ../Application/User/data_snapshot_maker.h:
 
 ../Application/User/itoa.h:
+
+../../../Inc/mxconstants.h:

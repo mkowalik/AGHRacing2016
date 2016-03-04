@@ -1,5 +1,5 @@
 Application/User/fatfs.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Src/fatfs.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/fatfs.c \
  ../../../Inc/fatfs.h ../../../Middlewares/Third_Party/FatFs/src/ff.h \
  ../../../Middlewares/Third_Party/FatFs/src/integer.h \
  ../../../Inc/ffconf.h \

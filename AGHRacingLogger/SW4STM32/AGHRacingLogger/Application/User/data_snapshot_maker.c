@@ -2,6 +2,7 @@
 #include "current_data_provider.h"
 #include "logged_data_types.h"
 #include "current_data_provider.h"
+#include <stddef.h>
 
 volatile uint16_t makedSnapshots[MAX_SNAPSHOT_NUMBER][CHANNEL_NUMBER];
 static volatile uint8_t leftPointer = 0;
@@ -26,7 +27,11 @@ void SnapshotMaker_makeSnapshot(){
 }
 
 volatile uint16_t* SnapshotMaker_getLeftSnapshotPointer(){
-	return makedSnapshots[leftPointer];
+	if (leftPointer < rightPointer){
+		return makedSnapshots[leftPointer];
+	} else {
+		return NULL;
+	}
 }
 
 void SnapshotMaker_leftSnaphotReadNotification(){

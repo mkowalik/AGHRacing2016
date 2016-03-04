@@ -1,5 +1,5 @@
 Application/User/stm32f4xx_it.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Src/stm32f4xx_it.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/stm32f4xx_it.c \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -51,7 +51,7 @@ Application/User/stm32f4xx_it.o: \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -157,4 +157,4 @@ Application/User/stm32f4xx_it.o: \
 
 ../../../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:

@@ -1,5 +1,5 @@
 Middlewares/FatFs/sd_diskio.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.c \
  ../../../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../../../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../../../Middlewares/Third_Party/FatFs/src/integer.h \

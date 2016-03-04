@@ -1,5 +1,5 @@
 Application/User/main.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Src/main.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/main.c \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -58,13 +58,13 @@ Application/User/main.o: \
  ../../../Middlewares/Third_Party/FatFs/src/ff.h \
  ../../../Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.h \
  ../../../Inc/mxconstants.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/current_data_provider.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/data_snapshot_maker.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/sd_card_saver.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/logged_data_types.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/uart_wrapper.h \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/current_data_provider.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/data_snapshot_maker.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/sd_card_saver.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/logged_data_types.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/uart_wrapper.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h
 
@@ -190,19 +190,19 @@ Application/User/main.o: \
 
 ../../../Inc/mxconstants.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/current_data_provider.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/current_data_provider.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/data_snapshot_maker.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/data_snapshot_maker.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/sd_card_saver.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/sd_card_saver.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/logged_data_types.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/logged_data_types.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/uart_wrapper.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/uart_wrapper.h:
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h:
 
 ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:
 

@@ -1,6 +1,6 @@
 Middlewares/FreeRTOS/cmsis_os.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h \
  ../../../Drivers/CMSIS/Include/core_cmFunc.h \
  ../../../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
@@ -20,7 +20,7 @@ Middlewares/FreeRTOS/cmsis_os.o: \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 
-C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h:
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h:
 
 ../../../Drivers/CMSIS/Include/core_cmFunc.h:
 

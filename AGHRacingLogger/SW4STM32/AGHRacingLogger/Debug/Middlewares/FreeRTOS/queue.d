@@ -1,5 +1,5 @@
 Middlewares/FreeRTOS/queue.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../../../Inc/FreeRTOSConfig.h ../../../Inc/mxconstants.h \
  ../../../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \

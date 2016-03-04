@@ -1,5 +1,5 @@
 Drivers/CMSIS/system_stm32f4xx.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h \
  ../../../Drivers/CMSIS/Include/core_cm4.h \

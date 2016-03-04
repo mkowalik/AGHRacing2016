@@ -60,6 +60,8 @@
 #define LD5_GPIO_Port GPIOD
 #define LD6_Pin GPIO_PIN_15
 #define LD6_GPIO_Port GPIOD
+#define SD_Card_Select_Pin GPIO_PIN_13
+#define SD_Card_Select_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

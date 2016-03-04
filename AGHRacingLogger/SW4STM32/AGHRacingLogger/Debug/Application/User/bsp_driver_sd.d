@@ -1,5 +1,5 @@
 Application/User/bsp_driver_sd.o: \
- C:/Users/kowalik/Desktop/AGHRacingLoggerCube/AGHRacingLogger/Src/bsp_driver_sd.c \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/bsp_driver_sd.c \
  ../../../Inc/bsp_driver_sd.h \
  ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../../../Inc/stm32f4xx_hal_conf.h ../../../Inc/mxconstants.h \

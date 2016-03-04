@@ -54,7 +54,7 @@
 /** 
   * @brief  HAL Status structures definition  
   */  
-typedef enum
+typedef enum 
 {
   HAL_OK       = 0x00U,
   HAL_ERROR    = 0x01U,

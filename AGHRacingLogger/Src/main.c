@@ -120,6 +120,7 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_FATFS_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -142,7 +143,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 1280);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -399,6 +400,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : SD_Card_Select_Pin */
+  GPIO_InitStruct.Pin = SD_Card_Select_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(SD_Card_Select_GPIO_Port, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -444,24 +451,6 @@ void StartDefaultTask(void const * argument)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN 5 */
-
-  FATFS ff;
-
-  FRESULT mount_res = f_mount(&ff, "", 1);
-
-  FIL fil;
-
-  FRESULT open_res = f_open(&fil, "/test.txt", FA_READ | FA_WRITE | FA_OPEN_ALWAYS);
-
-  char text[] = "na ekierce siedzi wrona";
-  uint32_t length = strlen(text);
-  uint32_t written;
-
-  int write_res = f_puts(text, &fil);
-
-  FRESULT close_res = f_close(&fil);
-
-  f_mount(0, "", 1);
 
   /* Infinite loop */
   for(;;)
