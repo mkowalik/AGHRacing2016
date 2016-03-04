@@ -1,6 +1,6 @@
-#ifndef __data_snapshot_saver_H
-#define __data_snapshot_saver_H
+#ifndef __telemetry_H
+#define __telemetry_H
 
 void Telemetry_sendActualData(void const* args);
 
-#endif /* __data_snapshot_saver_H */
+#endif /* __telemetry_H */

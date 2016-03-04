@@ -1,5 +1,6 @@
 #include "current_data_provider.h"
 #include "logged_data_types.h"
+#include "error_logger.h"
 
 volatile uint16_t currentData [CHANNEL_NUMBER];
 

@@ -70,6 +70,9 @@ osThreadId defaultTaskHandle;
 TaskHandle_t saveActualDataTaskHandle;
 TaskHandle_t saveActualBytesFromECUTaskHandle;
 TaskHandle_t ledBlinkingTaskHandle;
+TaskHandle_t SDCardSaverTaskHandle;
+
+osMutexId currentDataMutexHandle;
 
 /* USER CODE END PV */
 
@@ -90,6 +93,7 @@ void StartDefaultTask(void const * argument);
 void StartMakeDataSnaphotTask(void const * argument);
 void StartSaveActualBytesFromECUTask(void const * argument);
 void StartLedBlinkingTask(void const * argument);
+void StartSDCardSaverTask(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -124,13 +128,30 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
+  DataTypes_initDefaults();
+
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
   UART1_ReceiveDataFromECU_DMA(dataPointer);
+
+  hcan1.pTxMsg->DLC = 1;
+  hcan1.pTxMsg->Data[0] = 156;
+  hcan1.pTxMsg->StdId = 1;
+  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
+  hcan1.pTxMsg->IDE = CAN_ID_STD;
+  HAL_CAN_Transmit(&hcan1, 1000);
+
+  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+
+  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
 
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+
+  osMutexDef(currentDataMutex);
+  currentDataMutexHandle = osMutexCreate(osMutex(currentDataMutex));
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -157,6 +178,10 @@ int main(void)
 
   osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityLow, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
+
+  osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 128);
+  SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
+
 
   /* USER CODE END RTOS_THREADS */
 
@@ -233,11 +258,11 @@ void MX_CAN1_Init(void)
 {
 
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
-  hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SJW = CAN_SJW_1TQ;
-  hcan1.Init.BS1 = CAN_BS1_1TQ;
-  hcan1.Init.BS2 = CAN_BS2_1TQ;
+  hcan1.Init.Prescaler = 21;
+  hcan1.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan1.Init.SJW = CAN_SJW_2TQ;
+  hcan1.Init.BS1 = CAN_BS1_9TQ;
+  hcan1.Init.BS2 = CAN_BS2_6TQ;
   hcan1.Init.TTCM = DISABLE;
   hcan1.Init.ABOM = DISABLE;
   hcan1.Init.AWUM = DISABLE;
@@ -403,7 +428,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : SD_Card_Select_Pin */
   GPIO_InitStruct.Pin = SD_Card_Select_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SD_Card_Select_GPIO_Port, &GPIO_InitStruct);
 
 }
@@ -438,6 +463,64 @@ void StartLedBlinkingTask(void const * argument){
 	    osDelay(200);
 	}
 
+}
+
+typedef enum {
+	SDState_Begin, SDState_InitFail, SDState_Saving, SDState_SavingFail, SDState_Stop, SDState_StopFail
+} SD_Thread_State;
+
+SD_Thread_State SDThreadState = SDState_Begin;
+
+void StartSDCardSaverTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+	FRESULT result;
+
+	while (1){
+		switch (SDThreadState){
+		case SDState_Begin:
+		case SDState_InitFail:
+			result = SDCardSaver_init();
+			if (result==FR_OK) {
+				SDThreadState = SDState_Stop;
+			} else {
+				SDThreadState = SDState_InitFail;
+			}
+			break;
+		case SDState_Stop:
+		case SDState_SavingFail:
+			if (SDCardSaver_shouldRecordData()){
+				result = SDCardSaver_initNewFile();
+				if (result==FR_OK){
+					SDThreadState = SDState_Saving;
+				} else {
+					SDThreadState = SDState_SavingFail;
+				}
+			}
+			break;
+		case SDState_Saving:
+			if (SDCardSaver_shouldRecordData()){
+				result = SDCardSaver_saveAllUnsavedData();
+				if (result!=FR_OK){
+					SDThreadState = SDState_SavingFail;
+				}
+			} else {
+				result = SDCardSaver_stopSaving();
+				if (result==FR_OK){
+					SDThreadState = SDState_Stop;
+				}
+			}
+			break;
+		case SDState_StopFail:
+			result = SDCardSaver_stopSaving();
+			if (result==FR_OK){
+				SDThreadState = SDState_Stop;
+			}
+			break;
+		}
+
+		osDelayUntil((uint32_t*) &xLastWakeTime, 5);
+	}
 
 }
 

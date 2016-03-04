@@ -9,6 +9,7 @@ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/bsp_driver_sd.
 ../Application/User/dashboard.c \
 ../Application/User/data_snapshot_maker.c \
 ../Application/User/ecumaster.c \
+../Application/User/error_logger.c \
 C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/fatfs.c \
 C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/Src/freertos.c \
 ../Application/User/itoa.c \
@@ -27,6 +28,7 @@ OBJS += \
 ./Application/User/dashboard.o \
 ./Application/User/data_snapshot_maker.o \
 ./Application/User/ecumaster.o \
+./Application/User/error_logger.o \
 ./Application/User/fatfs.o \
 ./Application/User/freertos.o \
 ./Application/User/itoa.o \
@@ -45,6 +47,7 @@ C_DEPS += \
 ./Application/User/dashboard.d \
 ./Application/User/data_snapshot_maker.d \
 ./Application/User/ecumaster.d \
+./Application/User/error_logger.d \
 ./Application/User/fatfs.d \
 ./Application/User/freertos.d \
 ./Application/User/itoa.d \

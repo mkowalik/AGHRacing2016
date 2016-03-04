@@ -5,6 +5,8 @@
 #include "itoa.h"
 #include "string.h"
 #include "mxconstants.h"
+#include "error_logger.h"
+#include "current_data_provider.h"
 
 #define MAX_FILENAME_PREFIX_LENGTH	128
 #define MAX_FILENAME_LENGTH			(MAX_FILENAME_PREFIX_LENGTH+26)
@@ -18,9 +20,16 @@ static FIL fileHandler;
 
 extern RTC_HandleTypeDef hrtc;
 
+extern osMutexId currentDataMutexHandle;
+
 void SDCardSaver_checkIferror(FRESULT result, char* comment){
+	char buffer[20];
 	if (result!=FR_OK){
-		//TODO zrob cos z bledem
+		LOG_warning("SD Card Saver Error");
+		itoa(result, buffer);
+		LOG_warning(buffer);
+		LOG_warning(comment);
+		//TODO moze jakas inicjalizacja ponowna czy cos?
 	}
 }
 
@@ -38,11 +47,13 @@ uint8_t SDCardSaver_isSDCardInSlot(){
 	return FR_DISK_ERR;
 }
 
-void SDCardSaver_init(){
+FRESULT SDCardSaver_init(){
 	FRESULT result = f_mount(&SDCardHandler, "", 0);
 	SDCardSaver_checkIferror(result, "Error in init procedure.");
+	if (result!=FR_OK) return result;
 	result = SDCardSaver_isSDCardInSlot();
 	SDCardSaver_checkIferror(result, "Insert SD Card to slot.");
+	return result;
 }
 
 RTC_DateTypeDef actualDate(){
@@ -58,8 +69,27 @@ RTC_TimeTypeDef actualTime(){
 }
 
 
+FRESULT saveFirstLine(){
+	FRESULT result;
+	UINT bytesWritten;
 
-void SDCardSaver_initNewFile(){
+	for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
+		result = f_write(&fileHandler, DataTypes_fullName[i], strlen(DataTypes_fullName[i]), &bytesWritten);
+		SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(DataTypes_fullName[i]), "Error while saving first line to file.");
+		if (result!=FR_OK) return result;
+		if (i+1<CHANNEL_NUMBER){
+			result = f_write(&fileHandler, ",", strlen(","), &bytesWritten);
+			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(","), "Error while saving first line to file.");
+			if (result!=FR_OK) return result;
+		}
+	}
+	result = f_write(&fileHandler, "\r\n", strlen("\r\n"), &bytesWritten);
+	SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen("\r\n"), "Error while saving first line to file.");
+	return result;
+}
+
+
+FRESULT SDCardSaver_initNewFile(){
 
 	char basicFilename[MAX_FILENAME_LENGTH+1];
 	RTC_TimeTypeDef sTime = actualTime();
@@ -94,44 +124,73 @@ void SDCardSaver_initNewFile(){
 
 	SDCardSaver_checkIferror(result, "Error while opening file.");
 
+	result = saveFirstLine();
+
+	return result;
 }
 
-void saveFirstLine(){
-	FRESULT result;
-	UINT bytesWritten;
 
-	for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
-		result = f_write(&fileHandler, DataTypes_fullName[i], strlen(DataTypes_fullName[i]), &bytesWritten);
-		SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(DataTypes_fullName[i]), "Error while saving first line to file.");
-		if (i+1<CHANNEL_NUMBER){
-			result = f_write(&fileHandler, ",", strlen(","), &bytesWritten);
-			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(","), "Error while saving first line to file.");
-		}
-	}
-	result = f_write(&fileHandler, "\r\n", strlen("\r\n"), &bytesWritten);
-	SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen("\r\n"), "Error while saving first line to file.");
-}
-
-void SDCardSaver_saveAllUnsavedData(){
+FRESULT SDCardSaver_saveAllUnsavedData(){
 	FRESULT result;
 	UINT bytesWritten;
 	char buffer[20];
 
-	//TODO jakis mutex na danych
+	/** Take mutex for current data **/
+	if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+		LOG_warning("Error (timeout probably) while waiting for mutex for current data in sd_card_saver.");
+		return FR_DISK_ERR;
+	}
+
 	volatile uint16_t* toSaveData = SnapshotMaker_getLeftSnapshotPointer();
 	while (toSaveData!=NULL){
 		for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
 			itoa(toSaveData[i], buffer);
 			result = f_write(&fileHandler, buffer, strlen(buffer), &bytesWritten);
 			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(DataTypes_fullName[i]), "Error while saving snapshot data");
+			if (result!=FR_OK) return result;
 		}
 		result = f_write(&fileHandler, "\r\n", strlen("\r\n"), &bytesWritten);
 		SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen("\r\n"), "Error while saving snapshot data");
+		if (result!=FR_OK) return result;
 		SnapshotMaker_leftSnaphotReadNotification();
 	}
+
+	/** Release mutex for current data **/
+	if (osMutexRelease(currentDataMutexHandle)!=osOK){
+		LOG_warning("Error while releasing mutex for current data in sd_card_saver.");
+		return FR_DISK_ERR;
+	}
+
+	return result;
 }
 
-void SDCardSaver_stopSaving(){
+FRESULT SDCardSaver_stopSaving(){
 	FRESULT result = f_close(&fileHandler);
 	SDCardSaver_checkIferror(result, "Error while closing file.");
+	return result;
 }
+
+uint8_t SDCardSaver_shouldRecordData(){		/** Take mutex for current data **/
+
+	uint16_t value;
+	static uint8_t ret = 0;
+
+	if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+		LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
+		return ret;
+	}
+
+	value = getCurrentData()[TRIGGER_CHANNEL];
+
+	/** Release mutex for current data **/
+	if (osMutexRelease(currentDataMutexHandle)!=osOK){
+		LOG_warning("Error while releasing mutex for current data in data_snapshot_maker.");
+		return ret;
+	}
+
+	if (value>TRIGGER_VALUE_GREATHER_THEN){
+		return 1;
+	}
+	return 0;
+}
+

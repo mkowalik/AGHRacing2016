@@ -2,23 +2,37 @@
 #include "current_data_provider.h"
 #include "logged_data_types.h"
 #include "current_data_provider.h"
+#include "cmsis_os.h"
+#include "itoa.h"
 #include <stddef.h>
 
 volatile uint16_t makedSnapshots[MAX_SNAPSHOT_NUMBER][CHANNEL_NUMBER];
 static volatile uint8_t leftPointer = 0;
 static volatile uint8_t rightPointer = 0;
 
+extern osMutexId currentDataMutexHandle;
+
 void SnapshotMaker_makeSnapshot(){
 	if (leftPointer>=rightPointer) return; //if not free placeholder skip data
 
 	volatile uint16_t* currentDataPointer = getCurrentData();
 
-	//TODO jakiœ mutex na actual data by sie przydal
+	/** Take mutex for current data **/
+	if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+		LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
+		return;
+	}
+
 	for (int i=0; i<CHANNEL_NUMBER; i++){
 		makedSnapshots[rightPointer][i] = currentDataPointer[i];
 	}
+
 	rightPointer++;
-	//TODO zwolnic mutex
+
+	/** Release mutex for current data **/
+	if (osMutexRelease(currentDataMutexHandle)!=osOK){
+		LOG_warning("Error while releasing mutex for current data in data_snapshot_maker.");
+	}
 
 	if (leftPointer>MAX_SNAPSHOT_NUMBER && rightPointer>MAX_SNAPSHOT_NUMBER){
 		leftPointer-=MAX_SNAPSHOT_NUMBER;

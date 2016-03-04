@@ -38,6 +38,7 @@
 "Application/User/dashboard.o"
 "Application/User/data_snapshot_maker.o"
 "Application/User/ecumaster.o"
+"Application/User/error_logger.o"
 "Application/User/fatfs.o"
 "Application/User/freertos.o"
 "Application/User/itoa.o"

@@ -1,6 +1,8 @@
 #include "ecumaster.h"
 #include "logged_data_types.h"
 #include "current_data_provider.h"
+#include "error_logger.h"
+#include "cmsis_os.h"
 
 #define ECU_CHANNEL_RPM 1
 #define ECU_CHANNEL_MAP 2
@@ -39,6 +41,8 @@
 static volatile uint8_t receivedECUBytes[ECU_BUFFER_SIZE];
 static volatile uint16_t ECUDataLeftIndex = 0;
 static volatile uint16_t ECUDataRightIndex = 0;
+
+extern osMutexId currentDataMutexHandle;
 
 void ECU_receivedByteNotification(){
 	ECUDataRightIndex++;
@@ -181,7 +185,18 @@ void ECU_saveCurrentData(void const * args){
 //				loggedDataChannel =
 		}
 
+		/** Take mutex for current data **/
+		if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+			LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
+			return;
+		}
+
 		saveCurrentData(loggedDataChannel, actECUFrame.value);
+
+		/** Release mutex for current data **/
+		if (osMutexRelease(currentDataMutexHandle)!=osOK){
+			LOG_warning("Error while releasing mutex for current data in data_snapshot_maker.");
+		}
 
 		ECUDataLeftIndex+=5;
 

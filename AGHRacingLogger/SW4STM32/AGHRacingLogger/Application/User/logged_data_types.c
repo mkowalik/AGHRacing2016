@@ -1,4 +1,6 @@
 #include "logged_data_types.h"
+#include "error_logger.h"
+#include "current_data_provider.h"
 
 #define NULL 0
 
