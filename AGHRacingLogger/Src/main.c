@@ -164,23 +164,24 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /*osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);*/
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+	SnapshotMaker_makeSnapshot(); //TODO
 
-  osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
-  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
+  /*osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
+  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);*/
 
-  osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
-  saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
+  /*osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
+  saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);*/
+
+  osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
+  SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
 
   osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityLow, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
-
-  osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 128);
-  SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
 
 
   /* USER CODE END RTOS_THREADS */
@@ -321,7 +322,7 @@ void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 2;
+  hsd.Init.ClockDiv = 50;
 
 }
 
@@ -439,10 +440,12 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 	TickType_t xLastWakeTime = osKernelSysTick();
 
-	while (1){
+//	while (1){ //TODO
 		SnapshotMaker_makeSnapshot();
-		osDelayUntil((uint32_t*) &xLastWakeTime, 100);
-	}
+//		osDelayUntil((uint32_t*) &xLastWakeTime, 1000);
+//	}
+
+		while(1); //TODO
 }
 
 void StartSaveActualBytesFromECUTask(void const * argument){

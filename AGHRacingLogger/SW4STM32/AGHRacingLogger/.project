@@ -29,6 +29,10 @@
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s</location>
 		</link><link>
+			<name>Middlewares/FatFs/ccsbcs.c</name>
+			<type>1</type>
+			<location>PARENT-2-PROJECT_LOC/Middlewares/Third_Party/FatFs/src/option/ccsbcs.c</location>
+		</link><link>
 			<name>Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_cortex.c</name>
 			<type>1</type>
 			<location>PARENT-2-PROJECT_LOC/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c</location>

@@ -7,6 +7,7 @@
 "Middlewares/FreeRTOS/queue.o"
 "Middlewares/FreeRTOS/tasks.o"
 "Middlewares/FreeRTOS/timers.o"
+"Middlewares/FatFs/ccsbcs.o"
 "Middlewares/FatFs/diskio.o"
 "Middlewares/FatFs/ff.o"
 "Middlewares/FatFs/ff_gen_drv.o"

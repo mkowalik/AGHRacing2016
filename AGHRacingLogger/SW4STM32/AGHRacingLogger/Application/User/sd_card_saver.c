@@ -10,7 +10,7 @@
 
 #define MAX_FILENAME_PREFIX_LENGTH	128
 #define MAX_FILENAME_LENGTH			(MAX_FILENAME_PREFIX_LENGTH+26)
-#define FILE_NAME_PREFIX			"AGHRT_Log_"
+#define FILE_NAME_PREFIX			"/AGHRT_Log_"
 #define FILE_EXTENSION				".aghlog"
 
 static TCHAR filename[MAX_FILENAME_LENGTH+1];
@@ -19,6 +19,7 @@ FATFS SDCardHandler;
 static FIL fileHandler;
 
 extern RTC_HandleTypeDef hrtc;
+extern SD_HandleTypeDef hsd;
 
 extern osMutexId currentDataMutexHandle;
 
@@ -72,16 +73,18 @@ RTC_TimeTypeDef actualTime(){
 FRESULT saveFirstLine(){
 	FRESULT result;
 	UINT bytesWritten;
-
+	HAL_Delay(1000);
 	for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
 		result = f_write(&fileHandler, DataTypes_fullName[i], strlen(DataTypes_fullName[i]), &bytesWritten);
 		SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(DataTypes_fullName[i]), "Error while saving first line to file.");
 		if (result!=FR_OK) return result;
+		//HAL_Delay(100);
 		if (i+1<CHANNEL_NUMBER){
 			result = f_write(&fileHandler, ",", strlen(","), &bytesWritten);
 			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(","), "Error while saving first line to file.");
 			if (result!=FR_OK) return result;
 		}
+		//HAL_Delay(100);
 	}
 	result = f_write(&fileHandler, "\r\n", strlen("\r\n"), &bytesWritten);
 	SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen("\r\n"), "Error while saving first line to file.");
@@ -112,17 +115,26 @@ FRESULT SDCardSaver_initNewFile(){
 	strcpy(basicFilename, (char*)filename);
 	strcat((char*)filename, FILE_EXTENSION);
 
-	FRESULT result = f_open(&fileHandler, filename, FA_READ|FA_WRITE|FA_CREATE_NEW);
+	HAL_Delay(10);//TODO
+//	HAL_SD_TransferStateTypedef tmp1 = HAL_SD_GetStatus(&hsd);
+	FRESULT result = f_open((FIL*)&fileHandler, (TCHAR*)filename, (FA_READ|FA_WRITE|FA_CREATE_NEW));
 	for (uint8_t versionCounter=0; result==FR_EXIST; versionCounter++){
-		versionCounter++;
 		strcpy((char*)filename, basicFilename);
 		strcat((char*)filename, "_");
 		itoa(versionCounter, (char*)(filename+strlen((char*)filename)));
 		strcat((char*)filename, FILE_EXTENSION);
-		result = f_open((FIL*)&fileHandler, (TCHAR*)filename, FA_CREATE_NEW);
+
+//		HAL_SD_TransferStateTypedef tmp3 = HAL_SD_GetStatus(&hsd);
+		result = f_open((FIL*)&fileHandler, (TCHAR*)filename, (FA_READ|FA_WRITE|FA_CREATE_NEW));
 	}
 
+
+//	HAL_SD_TransferStateTypedef tmp2 = HAL_SD_GetStatus(&hsd);
+
 	SDCardSaver_checkIferror(result, "Error while opening file.");
+	if (result!=FR_OK) return result;
+
+	HAL_SD_TransferStateTypedef tmp = HAL_SD_GetStatus(&hsd);
 
 	result = saveFirstLine();
 
@@ -131,7 +143,7 @@ FRESULT SDCardSaver_initNewFile(){
 
 
 FRESULT SDCardSaver_saveAllUnsavedData(){
-	FRESULT result;
+	FRESULT result=0;
 	UINT bytesWritten;
 	char buffer[20];
 
@@ -146,13 +158,25 @@ FRESULT SDCardSaver_saveAllUnsavedData(){
 		for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
 			itoa(toSaveData[i], buffer);
 			result = f_write(&fileHandler, buffer, strlen(buffer), &bytesWritten);
-			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(DataTypes_fullName[i]), "Error while saving snapshot data");
-			if (result!=FR_OK) return result;
+			SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(buffer), "Error while saving snapshot data");
+			if (result!=FR_OK) {
+				return result;
+			}
+			if (i+1<CHANNEL_NUMBER){
+				result = f_write(&fileHandler, ",", strlen(","), &bytesWritten);
+				SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen(","), "Error while saving first line to file.");
+				if (result!=FR_OK) {
+					return result;
+				}
+			}
 		}
 		result = f_write(&fileHandler, "\r\n", strlen("\r\n"), &bytesWritten);
 		SDCardSaver_checkIferrorWithBytesWritten(result, bytesWritten, strlen("\r\n"), "Error while saving snapshot data");
-		if (result!=FR_OK) return result;
+		if (result!=FR_OK) {
+			return result;
+		}
 		SnapshotMaker_leftSnaphotReadNotification();
+		toSaveData = SnapshotMaker_getLeftSnapshotPointer();
 	}
 
 	/** Release mutex for current data **/
@@ -170,11 +194,15 @@ FRESULT SDCardSaver_stopSaving(){
 	return result;
 }
 
-uint8_t SDCardSaver_shouldRecordData(){		/** Take mutex for current data **/
+uint8_t SDCardSaver_shouldRecordData(){
+
+	uint8_t val = 1;//TODO FOR DEBUG
+	return val;//TODO FOR DEBUG
 
 	uint16_t value;
 	static uint8_t ret = 0;
 
+	/** Take mutex for current data **/
 	if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
 		LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
 		return ret;

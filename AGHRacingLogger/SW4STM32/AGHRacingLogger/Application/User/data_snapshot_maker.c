@@ -13,7 +13,7 @@ static volatile uint8_t rightPointer = 0;
 extern osMutexId currentDataMutexHandle;
 
 void SnapshotMaker_makeSnapshot(){
-	if (leftPointer>=rightPointer) return; //if not free placeholder skip data
+	if ((rightPointer-leftPointer) > MAX_SNAPSHOT_NUMBER) return; //if not free placeholder skip data
 
 	volatile uint16_t* currentDataPointer = getCurrentData();
 
