@@ -164,15 +164,14 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  /*osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);*/
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-	SnapshotMaker_makeSnapshot(); //TODO
 
-  /*osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
-  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);*/
+  osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
+  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
 
   /*osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
   saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);*/
@@ -440,12 +439,11 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 	TickType_t xLastWakeTime = osKernelSysTick();
 
-//	while (1){ //TODO
+	while (1){
 		SnapshotMaker_makeSnapshot();
-//		osDelayUntil((uint32_t*) &xLastWakeTime, 1000);
-//	}
+		osDelayUntil((uint32_t*) &xLastWakeTime, 1000);
+	}
 
-		while(1); //TODO
 }
 
 void StartSaveActualBytesFromECUTask(void const * argument){

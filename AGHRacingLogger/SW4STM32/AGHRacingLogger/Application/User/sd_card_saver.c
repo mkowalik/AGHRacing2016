@@ -152,9 +152,11 @@ FRESULT SDCardSaver_saveAllUnsavedData(){
 		LOG_warning("Error (timeout probably) while waiting for mutex for current data in sd_card_saver.");
 		return FR_DISK_ERR;
 	}
+    HAL_GPIO_TogglePin(LD4_GPIO_Port, LD4_Pin);//TODO DEBUG
 
 	volatile uint16_t* toSaveData = SnapshotMaker_getLeftSnapshotPointer();
 	while (toSaveData!=NULL){
+	    HAL_GPIO_TogglePin(LD6_GPIO_Port, LD6_Pin);//TODO DEBUG
 		for (uint16_t i=0; i<CHANNEL_NUMBER; i++){
 			itoa(toSaveData[i], buffer);
 			result = f_write(&fileHandler, buffer, strlen(buffer), &bytesWritten);

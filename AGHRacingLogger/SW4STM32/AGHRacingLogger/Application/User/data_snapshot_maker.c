@@ -4,6 +4,9 @@
 #include "current_data_provider.h"
 #include "cmsis_os.h"
 #include "itoa.h"
+#include "mxconstants.h"
+#include "error_logger.h"
+#include "stm32f4xx_hal.h"
 #include <stddef.h>
 
 volatile uint16_t makedSnapshots[MAX_SNAPSHOT_NUMBER][CHANNEL_NUMBER];
@@ -14,6 +17,7 @@ extern osMutexId currentDataMutexHandle;
 
 void SnapshotMaker_makeSnapshot(){
 	if ((rightPointer-leftPointer) > MAX_SNAPSHOT_NUMBER) return; //if not free placeholder skip data
+    HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);//TODO DEBUG
 
 	volatile uint16_t* currentDataPointer = getCurrentData();
 
@@ -24,7 +28,7 @@ void SnapshotMaker_makeSnapshot(){
 	}
 
 	for (int i=0; i<CHANNEL_NUMBER; i++){
-		makedSnapshots[rightPointer][i] = currentDataPointer[i];
+		makedSnapshots[rightPointer%MAX_SNAPSHOT_NUMBER][i] = currentDataPointer[i];
 	}
 
 	rightPointer++;
@@ -42,7 +46,7 @@ void SnapshotMaker_makeSnapshot(){
 
 volatile uint16_t* SnapshotMaker_getLeftSnapshotPointer(){
 	if (leftPointer < rightPointer){
-		return makedSnapshots[leftPointer];
+		return makedSnapshots[leftPointer%MAX_SNAPSHOT_NUMBER];
 	} else {
 		return NULL;
 	}
