@@ -57,6 +57,9 @@ RTC_HandleTypeDef hrtc;
 SD_HandleTypeDef hsd;
 HAL_SD_CardInfoTypedef SDCardInfo;
 
+SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -85,6 +88,7 @@ static void MX_RTC_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -125,6 +129,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_FATFS_Init();
+  MX_SPI1_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -133,6 +138,7 @@ int main(void)
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
   UART1_ReceiveDataFromECU_DMA(dataPointer);
 
+  //TODO Debug CAN ponizej
   hcan1.pTxMsg->DLC = 1;
   hcan1.pTxMsg->Data[0] = 156;
   hcan1.pTxMsg->StdId = 1;
@@ -173,8 +179,8 @@ int main(void)
   osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
   saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
 
-  /*osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
-  saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);*/
+  osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
+  saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
 
   osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
   SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
@@ -325,6 +331,26 @@ void MX_SDIO_SD_Init(void)
 
 }
 
+/* SPI1 init function */
+void MX_SPI1_Init(void)
+{
+
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi1);
+
+}
+
 /* USART1 init function */
 void MX_USART1_UART_Init(void)
 {
@@ -371,6 +397,8 @@ void MX_DMA_Init(void)
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }
 
@@ -394,7 +422,13 @@ void MX_GPIO_Init(void)
   __GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, OTG_FS_PowerSwitchOn_Pin|OLED_DC_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OLED_ChipSelect_GPIO_Port, OLED_ChipSelect_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OLED_RESET_GPIO_Port, OLED_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin, GPIO_PIN_RESET);
@@ -411,6 +445,20 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : OLED_ChipSelect_Pin */
+  GPIO_InitStruct.Pin = OLED_ChipSelect_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(OLED_ChipSelect_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : OLED_DC_Pin OLED_RESET_Pin */
+  GPIO_InitStruct.Pin = OLED_DC_Pin|OLED_RESET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BOOT1_Pin */
   GPIO_InitStruct.Pin = BOOT1_Pin;
@@ -441,7 +489,7 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 	while (1){
 		SnapshotMaker_makeSnapshot();
-		osDelayUntil((uint32_t*) &xLastWakeTime, 1000);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 100);
 	}
 
 }
@@ -520,7 +568,7 @@ void StartSDCardSaverTask(void const * argument){
 			break;
 		}
 
-		osDelayUntil((uint32_t*) &xLastWakeTime, 5);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
 	}
 
 }

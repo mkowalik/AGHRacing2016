@@ -20,5 +20,6 @@ Middlewares/FatFs \
 Drivers/STM32F4xx_HAL_Driver \
 Drivers/CMSIS \
 Application/User \
+Application/User/SH1106 \
 Application/SW4STM32 \
 
