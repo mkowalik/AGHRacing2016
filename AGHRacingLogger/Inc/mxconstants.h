@@ -54,6 +54,8 @@
 #define OLED_ChipSelect_GPIO_Port GPIOA
 #define OLED_SCK_Pin GPIO_PIN_5
 #define OLED_SCK_GPIO_Port GPIOA
+#define Dash_Button_Pin GPIO_PIN_6
+#define Dash_Button_GPIO_Port GPIOA
 #define OLED_MOSI_Pin GPIO_PIN_7
 #define OLED_MOSI_GPIO_Port GPIOA
 #define OLED_DC_Pin GPIO_PIN_4

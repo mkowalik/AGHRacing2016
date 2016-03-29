@@ -23,7 +23,6 @@
 #define _SSD1306_H_
 
 /* Includes ------------------------------------------------------------------*/
-//#include "MacroAndConst.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -44,7 +43,11 @@ extern void ssd1306_display_num(uint8_t chXpos, uint8_t chYpos, uint32_t chNum, 
 extern void ssd1306_display_string(uint8_t chXpos, uint8_t chYpos, const uint8_t *pchString, uint8_t chSize, uint8_t chMode);
 extern void ssd1306_draw_1616char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar);
 extern void ssd1306_draw_3216char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar);
+extern void ssd1306_draw_4834char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar);
 extern void ssd1306_draw_bitmap(uint8_t chXpos, uint8_t chYpos, const uint8_t *pchBmp, uint8_t chWidth, uint8_t chHeight);
+extern void ssd1306_draw_2819char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar);
+extern void ssd1306_display_on(void);
+extern void ssd1306_display_off(void);
 
 extern void ssd1306_init(void);
 

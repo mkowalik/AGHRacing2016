@@ -134,8 +134,6 @@ FRESULT SDCardSaver_initNewFile(){
 	SDCardSaver_checkIferror(result, "Error while opening file.");
 	if (result!=FR_OK) return result;
 
-	HAL_SD_TransferStateTypedef tmp = HAL_SD_GetStatus(&hsd);
-
 	result = saveFirstLine();
 
 	return result;

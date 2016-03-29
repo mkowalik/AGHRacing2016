@@ -4,9 +4,6 @@
 
 #define NULL 0
 
-char* DataTypes_unitString[CHANNEL_NUMBER];
-char* DataTypes_fullName[CHANNEL_NUMBER];
-
 void DataTypes_initDefaults(){
 
 	uint16_t data_type;

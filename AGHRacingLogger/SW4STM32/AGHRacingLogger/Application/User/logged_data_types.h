@@ -48,8 +48,8 @@ typedef enum {
 
 uint8_t DataTypes_divider[CHANNEL_NUMBER];
 uint16_t DataTypes_gaugeDivider[CHANNEL_NUMBER];
-uint16_t DataTypes_gaugeMinValue[CHANNEL_NUMBER];
-uint16_t DataTypes_gaugeMaxValue[CHANNEL_NUMBER];
+int16_t DataTypes_gaugeMinValue[CHANNEL_NUMBER];
+int16_t DataTypes_gaugeMaxValue[CHANNEL_NUMBER];
 DataTypes_AlertModeTypeDef DataTypes_AlertMode[CHANNEL_NUMBER];
 uint16_t DataTypes_lowAlert[CHANNEL_NUMBER];
 uint16_t DataTypes_highAlert[CHANNEL_NUMBER];

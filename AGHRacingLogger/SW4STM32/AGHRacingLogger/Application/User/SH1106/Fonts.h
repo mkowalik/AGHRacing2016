@@ -23,7 +23,8 @@ extern const uint8_t c_chBluetooth88[8];
 extern const uint8_t c_chBat816[16];
 extern const uint8_t c_chGPRS88[8];
 extern const uint8_t c_chAlarm88[8];
-
+extern const uint8_t c_chFont4834[];
+extern const uint8_t c_chFont2819[];
 
 #endif
 

@@ -399,6 +399,63 @@ void ssd1306_draw_3216char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar)
 	}
 }
 
+void ssd1306_draw_4834char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar)
+{
+	uint8_t i, j;
+	uint8_t chTemp = 0, chYpos0 = chYpos, chMode = 0;
+
+	uint32_t iterations = 6*34;
+	if (chChar=='.'){
+		chChar = 58; //next after '9' sign
+		iterations = 6*11;
+	}
+	uint32_t baseIndex = (chChar-0x30)*(6*34);
+
+	for (i = 0; i < iterations; i++) {
+		chTemp = c_chFont4834[baseIndex + i];
+		for (j = 0; j < 8; j++) {
+			chMode = chTemp & 0x80? 1 : 0;
+			ssd1306_draw_point(chXpos, chYpos, chMode);
+			chTemp <<= 1;
+			chYpos ++;
+			if ((chYpos - chYpos0) == 48) {
+				chYpos = chYpos0;
+				chXpos ++;
+				break;
+			}
+		}
+	}
+}
+
+
+void ssd1306_draw_2819char(uint8_t chXpos, uint8_t chYpos, uint8_t chChar)
+{
+	uint8_t i, j;
+	uint8_t chTemp = 0, chYpos0 = chYpos, chMode = 0;
+
+	uint32_t iterations = 4*19;
+	if (chChar=='.'){
+		chChar = 58; //next after '9' sign
+		iterations = 4*5;
+	}
+	uint32_t baseIndex = (chChar-0x30)*(4*19);
+
+	for (i = 0; i < iterations; i++) {
+		chTemp = c_chFont2819[baseIndex + i];
+		for (j = 0; j < 8; j++) {
+			chMode = chTemp & 0x80? 1 : 0;
+			ssd1306_draw_point(chXpos, chYpos, chMode);
+			chTemp <<= 1;
+			chYpos ++;
+			if ((chYpos - chYpos0) == 28) {
+				chYpos = chYpos0;
+				chXpos ++;
+				break;
+			}
+		}
+	}
+}
+
 void ssd1306_draw_bitmap(uint8_t chXpos, uint8_t chYpos, const uint8_t *pchBmp, uint8_t chWidth, uint8_t chHeight)
 {
 	uint16_t i, j, byteWidth = (chWidth + 7) / 8;

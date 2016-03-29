@@ -67,7 +67,8 @@ Application/User/main.o: \
  C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/uart_wrapper.h \
  C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/ecumaster.h \
  ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h \
- ../../../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h
+ ../../../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h \
+ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/dashboard.h
 
 ../../../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -210,3 +211,5 @@ C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacing
 ../../../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h:
 
 ../../../Middlewares/Third_Party/FreeRTOS/Source/include/freertos.h:
+
+C:/Users/kowalik/Desktop/AGHRacingLoggerGitOK/AGHRacingLogger/SW4STM32/AGHRacingLogger/Application/User/dashboard.h:

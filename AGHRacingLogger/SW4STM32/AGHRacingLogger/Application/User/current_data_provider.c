@@ -11,3 +11,7 @@ void saveCurrentData(uint8_t channel, uint16_t value){
 volatile uint16_t* getCurrentData(){	//TODO zwrocic to tak, zeby nie dalo sie zmieniac - static
 	return currentData;
 }
+
+volatile uint32_t getCurrentDataForChannel(uint8_t channel){
+	return currentData[channel];
+}

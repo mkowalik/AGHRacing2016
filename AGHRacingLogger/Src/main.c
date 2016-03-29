@@ -46,6 +46,7 @@
 #include "uart_wrapper.h"
 #include "stm32f407xx.h"
 #include "freertos.h"
+#include "dashboard.h"
 
 /* USER CODE END Includes */
 
@@ -74,6 +75,7 @@ TaskHandle_t saveActualDataTaskHandle;
 TaskHandle_t saveActualBytesFromECUTaskHandle;
 TaskHandle_t ledBlinkingTaskHandle;
 TaskHandle_t SDCardSaverTaskHandle;
+TaskHandle_t DashboardTaskHandle;
 
 osMutexId currentDataMutexHandle;
 
@@ -98,6 +100,7 @@ void StartMakeDataSnaphotTask(void const * argument);
 void StartSaveActualBytesFromECUTask(void const * argument);
 void StartLedBlinkingTask(void const * argument);
 void StartSDCardSaverTask(void const * argument);
+void StartDashboardTask(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -184,6 +187,9 @@ int main(void)
 
   osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
   SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
+
+  osThreadDef(DashboardTask, StartDashboardTask, osPriorityHigh, 0, 1280);
+  DashboardTaskHandle = osThreadCreate(osThread(DashboardTask), NULL);
 
   osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityLow, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
@@ -453,6 +459,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(OLED_ChipSelect_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : Dash_Button_Pin */
+  GPIO_InitStruct.Pin = Dash_Button_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(Dash_Button_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : OLED_DC_Pin OLED_RESET_Pin */
   GPIO_InitStruct.Pin = OLED_DC_Pin|OLED_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -571,6 +583,28 @@ void StartSDCardSaverTask(void const * argument){
 		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
 	}
 
+}
+
+uint8_t actualDisplayingValueChannelIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
+uint32_t lastDashboardRefreshCouter;
+
+void StartDashboardTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+	lastDashboardRefreshCouter = 0;
+
+	dash_init();
+	while(1){
+		if (lastDashboardRefreshCouter%10==0){
+			dash_displayCurrentData(actualDisplayingValueChannelIndex);
+			lastDashboardRefreshCouter=0;
+		}
+		if (dash_updateButtonValue()){
+			actualDisplayingValueChannelIndex=(actualDisplayingValueChannelIndex+1)%NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS;
+		}
+		lastDashboardRefreshCouter++;
+		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
+	}
 }
 
 
