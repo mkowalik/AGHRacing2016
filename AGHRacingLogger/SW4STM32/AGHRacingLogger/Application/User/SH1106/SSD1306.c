@@ -77,7 +77,7 @@ static void ssd1306_write_byte(uint8_t chData, uint8_t chCmd)
 	} else {
 		__SSD1306_DC_CLR();
 	}	
-	__SSD1306_WRITE_BYTE(chData);
+	HAL_SPI_Transmit(&hspi1, &chData, 1, 10);
 	
 	//__SSD1306_DC_SET();
 	__SSD1306_CS_SET();

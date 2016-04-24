@@ -38,6 +38,10 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define GearDisplay_ChipSelect_Pin GPIO_PIN_2
+#define GearDisplay_ChipSelect_GPIO_Port GPIOE
+#define AlarmLED_ChipSelect_Pin GPIO_PIN_3
+#define AlarmLED_ChipSelect_GPIO_Port GPIOE
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15
@@ -74,6 +78,8 @@
 #define LD6_GPIO_Port GPIOD
 #define SD_Card_Select_Pin GPIO_PIN_8
 #define SD_Card_Select_GPIO_Port GPIOA
+#define Dash_Button2_Pin GPIO_PIN_3
+#define Dash_Button2_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

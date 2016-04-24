@@ -6,9 +6,12 @@
 #include "current_data_provider.h"
 #include "mxconstants.h"
 #include "stm32f4xx_hal.h"
+#include "gear_display.h"
 
 static uint16_t lastDisplayedValue;
 static uint8_t lastDisplayedFunctionIndex;
+
+static uint16_t lastDisplayedGearValue;
 
 uint8_t avaliableFunctions[] = {ECU_BATT, ECU_CLT, ECU_OIL_PRESSURE, ECU_OIL_TEMP, ECU_RPM}; //TODO przeniesc do pliku .h
 
@@ -64,6 +67,9 @@ void dash_init(){
 	lastDisplayedFunctionIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
 	lastDisplayedValue = getCurrentDataForChannel(avaliableFunctions[lastDisplayedFunctionIndex]);
 
+	lastDisplayedGearValue = 0;
+	//gearDisplay_displayDigit(lastDisplayedGearValue, 1);
+
 	ssd1306_init();
 	ssd1306_display_on();
 	ssd1306_clear_screen(0x00);
@@ -111,5 +117,15 @@ uint8_t dash_updateButtonValue(){
 		return 1;
 	}
 	return 0;
+
+}
+
+void dash_displayActualGear(){
+	uint16_t data = getCurrentDataForChannel(SENSOR_GEAR);
+
+	if (data!=lastDisplayedGearValue){
+		gearDisplay_displayDigit(data, (data==0));
+		lastDisplayedGearValue = data;
+	}
 
 }

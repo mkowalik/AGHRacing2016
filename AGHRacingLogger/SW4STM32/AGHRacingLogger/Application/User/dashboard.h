@@ -10,5 +10,6 @@
 void dash_displayCurrentData(uint8_t dataChannel);
 void dash_init();
 uint8_t dash_updateButtonValue();
+void dash_displayActualGear();
 
 #endif /* __dashboard_H */
