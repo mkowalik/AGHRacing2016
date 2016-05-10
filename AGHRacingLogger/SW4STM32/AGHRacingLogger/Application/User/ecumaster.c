@@ -207,10 +207,6 @@ void ECU_saveCurrentData(void const * args){
 
 		}
 
-		if (loggedDataChannel==ECU_BATT){
-			int a = 8;
-		}
-
 		/** Take mutex for current data **/
 		if (osMutexWait(currentDataMutexHandle, 10)!=osOK){
 			LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");

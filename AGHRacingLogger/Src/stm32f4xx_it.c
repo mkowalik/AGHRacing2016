@@ -162,7 +162,6 @@ void USART1_IRQHandler(void)
 	  /* UART in mode Receiver ---------------------------------------------------*/
 	if((uartItSource != RESET) && (dmaState & (HAL_DMA_STATE_BUSY | HAL_DMA_STATE_READY))){
 		ECU_receivedByteNotification();
-		return;
 	}
 
   /* USER CODE END USART1_IRQn 0 */

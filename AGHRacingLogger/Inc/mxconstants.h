@@ -40,8 +40,10 @@
 
 #define GearDisplay_ChipSelect_Pin GPIO_PIN_2
 #define GearDisplay_ChipSelect_GPIO_Port GPIOE
-#define AlarmLED_ChipSelect_Pin GPIO_PIN_3
-#define AlarmLED_ChipSelect_GPIO_Port GPIOE
+#define WS2812_MultiSelect_1_Pin GPIO_PIN_3
+#define WS2812_MultiSelect_1_GPIO_Port GPIOE
+#define WS2812_MultiSelect_2_Pin GPIO_PIN_4
+#define WS2812_MultiSelect_2_GPIO_Port GPIOE
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15

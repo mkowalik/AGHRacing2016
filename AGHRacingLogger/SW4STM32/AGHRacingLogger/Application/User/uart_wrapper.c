@@ -38,8 +38,13 @@ void UART1_ReceiveDataFromECU_DMA(){
 	}	//TODO jakos zrobic zeby bylo non-blocking
 
 	/* Enable the UART Data Register not empty Interrupt */
+	//HAL_UART_Receive(&huart1, (uint8_t*)ecuDataPointer, 1280, ECU_BUFFER_SIZE);//TODO bez tego z jakiegos powodu nie dziala :-/
+
+	int a = 4;//TODO DEBUG
+
 	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuDataPointer, ECU_BUFFER_SIZE);
 	uart1_stopped = 0;
+	__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
 	if (status!=HAL_OK){
 	  while(1){

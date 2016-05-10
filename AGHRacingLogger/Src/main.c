@@ -484,7 +484,7 @@ void MX_GPIO_Init(void)
   __GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, GearDisplay_ChipSelect_Pin|AlarmLED_ChipSelect_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin|WS2812_MultiSelect_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, OTG_FS_PowerSwitchOn_Pin|OLED_DC_Pin, GPIO_PIN_RESET);
@@ -498,12 +498,19 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : GearDisplay_ChipSelect_Pin AlarmLED_ChipSelect_Pin */
-  GPIO_InitStruct.Pin = GearDisplay_ChipSelect_Pin|AlarmLED_ChipSelect_Pin;
+  /*Configure GPIO pins : GearDisplay_ChipSelect_Pin WS2812_MultiSelect_1_Pin */
+  GPIO_InitStruct.Pin = GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : WS2812_MultiSelect_2_Pin */
+  GPIO_InitStruct.Pin = WS2812_MultiSelect_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(WS2812_MultiSelect_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : OTG_FS_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin;
