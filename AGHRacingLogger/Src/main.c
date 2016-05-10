@@ -48,6 +48,8 @@
 #include "freertos.h"
 #include "dashboard.h"
 #include "gear_display.h"
+#include "delay_timer6.h"
+#include "ws2812_driver.h"
 
 /* USER CODE END Includes */
 
@@ -60,7 +62,9 @@ SD_HandleTypeDef hsd;
 HAL_SD_CardInfoTypedef SDCardInfo;
 
 SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 TIM_HandleTypeDef htim6;
 
@@ -95,6 +99,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM6_Init(void);
+static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -105,6 +110,7 @@ void StartSaveActualBytesFromECUTask(void const * argument);
 void StartLedBlinkingTask(void const * argument);
 void StartSDCardSaverTask(void const * argument);
 void StartDashboardTask(void const * argument);
+void StartLEDSteeringWheelTask(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -138,13 +144,14 @@ int main(void)
   MX_FATFS_Init();
   MX_SPI1_Init();
   MX_TIM6_Init();
+  MX_SPI2_Init();
 
   /* USER CODE BEGIN 2 */
 
   DataTypes_initDefaults();
 
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
-  UART1_ReceiveDataFromECU_DMA(dataPointer);
+  UART1_ReceiveDataFromECU_DMA_init(dataPointer);
 
   //TODO Debug CAN ponizej
   hcan1.pTxMsg->DLC = 1;
@@ -157,8 +164,6 @@ int main(void)
   HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
 
   CanRxMsgTypeDef* msg = hcan1.pRxMsg;
-
-  gearDisplay_init();
 
   /* USER CODE END 2 */
 
@@ -186,20 +191,23 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 
-  osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
-  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
+  //osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
+  //saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
 
   osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
   saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
 
-  osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
-  SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
+  //osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
+  //SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
 
   osThreadDef(DashboardTask, StartDashboardTask, osPriorityHigh, 0, 1280);
   DashboardTaskHandle = osThreadCreate(osThread(DashboardTask), NULL);
 
-  osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityLow, 0, 128);
+  osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityNormal, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
+
+  //osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityLow, 0, 128);
+  //ledBlinkingTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
 
 
   /* USER CODE END RTOS_THREADS */
@@ -364,6 +372,26 @@ void MX_SPI1_Init(void)
 
 }
 
+/* SPI2 init function */
+void MX_SPI2_Init(void)
+{
+
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi2);
+
+}
+
 /* TIM6 init function */
 void MX_TIM6_Init(void)
 {
@@ -424,6 +452,8 @@ void MX_DMA_Init(void)
   __DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
@@ -530,7 +560,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : Dash_Button2_Pin */
   GPIO_InitStruct.Pin = Dash_Button2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(Dash_Button2_GPIO_Port, &GPIO_InitStruct);
 
 }
@@ -550,11 +580,13 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 void StartSaveActualBytesFromECUTask(void const * argument){
 
+	UART1_ReceiveDataFromECU_DMA();
+
 	TickType_t xLastWakeTime = osKernelSysTick();
 
 	while (1){
 		ECU_saveCurrentData(argument);
-		osDelayUntil((uint32_t*) &xLastWakeTime, 2);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 4);
 	}
 
 }
@@ -636,10 +668,11 @@ void StartDashboardTask(void const * argument){
 	lastDashboardRefreshCouter = 0;
 
 	dash_init();
+	gearDisplay_init();
 	while(1){
 		if (lastDashboardRefreshCouter%10==0){
 			dash_displayCurrentData(actualDisplayingValueChannelIndex);
-			//dash_displayActualGear();
+			dash_displayActualGear();
 			lastDashboardRefreshCouter=0;
 		}
 		if (dash_updateButtonValue()){
@@ -647,6 +680,36 @@ void StartDashboardTask(void const * argument){
 		}
 		lastDashboardRefreshCouter++;
 		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
+	}
+}
+
+uint8_t lastRPMvalue = 0;
+uint8_t lastCLTvalue = 0;
+uint8_t lastFuelvalue = 0;
+
+void StartLEDSteeringWheelTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+
+	ws2812_init();
+
+	while(1){
+		for (int i=0; i<25; i++){
+		  ws2812_displayRPM(i);
+			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
+		}
+		ws2812_displayRPM(0);
+		HAL_Delay(1);
+
+		for (int i=0; i<15; i++){
+		  ws2812_displayCLT(i);
+			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
+		}
+
+		for (int i=0; i<15; i++){
+		  ws2812_displayFuel(i);
+			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
+		}
 	}
 }
 

@@ -139,8 +139,7 @@ uint8_t BSP_SD_WriteBlocks(uint32_t *pData, uint64_t WriteAddr, uint32_t BlockSi
   else
   {
     return MSD_OK;
-  }
-}
+  }}
 
 /**
   * @brief  Reads block(s) from a specified address in an SD card, in DMA mode. 

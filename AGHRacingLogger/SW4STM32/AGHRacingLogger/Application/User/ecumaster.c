@@ -3,6 +3,9 @@
 #include "current_data_provider.h"
 #include "error_logger.h"
 #include "cmsis_os.h"
+#include "mxconstants.h"
+#include "stm32f4xx_hal.h"
+#include "uart_wrapper.h"
 
 #define ECU_CHANNEL_RPM 1
 #define ECU_CHANNEL_MAP 2
@@ -45,6 +48,10 @@ static volatile uint16_t ECUDataRightIndex = 0;
 extern osMutexId currentDataMutexHandle;
 
 void ECU_receivedByteNotification(){
+	if (ECUDataRightIndex-ECUDataLeftIndex+1>ECU_BUFFER_SIZE){
+		UART1_Stop();
+		return;
+	}
 	ECUDataRightIndex++;
 }
 
@@ -66,6 +73,13 @@ volatile uint8_t* ECU_getNextReceivedBytePointer(){
 
 void ECU_saveCurrentData(void const * args){
 	while (ECUDataLeftIndex + BYTES_IN_ECU_FRAME <= ECUDataRightIndex){
+
+		if (ECUDataRightIndex-ECUDataLeftIndex > ECU_BUFFER_SIZE){
+			  while(1){
+				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+				  HAL_Delay(50);
+			  }
+		}
 
 		ECUData actECUFrame;
 
@@ -183,10 +197,22 @@ void ECU_saveCurrentData(void const * args){
 				break;
 //			case ECU_CHANNEL_SECONDARY_PULSE_WIDTH:
 //				loggedDataChannel =
+			default:
+				ECUDataLeftIndex+=5;//TODO
+				if (ECUDataLeftIndex>ECU_BUFFER_SIZE){
+					ECUDataLeftIndex-=ECU_BUFFER_SIZE;
+					ECUDataRightIndex-=ECU_BUFFER_SIZE;
+				}
+				return;
+
+		}
+
+		if (loggedDataChannel==ECU_BATT){
+			int a = 8;
 		}
 
 		/** Take mutex for current data **/
-		if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+		if (osMutexWait(currentDataMutexHandle, 10)!=osOK){
 			LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
 			return;
 		}
@@ -206,4 +232,6 @@ void ECU_saveCurrentData(void const * args){
 		}
 
 	}
+
+	UART1_ReceiveDataFromECU_DMA();
 }

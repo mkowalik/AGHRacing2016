@@ -1,0 +1,197 @@
+#include "ws2812_driver.h"
+#include "stm32f4xx_hal.h"
+#include "string.h"
+
+extern SPI_HandleTypeDef hspi2;
+
+const uint8_t WS2812_RPMPattern[] = {
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b10010010, 0b01001001, 0b00100100, //BLUE
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110,
+
+	0b10010010, 0b01001001, 0b00100100, //BLUE
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110,
+
+	0b10010010, 0b01001001, 0b00100100, //BLUE
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110,
+
+	0b10010010, 0b01001001, 0b00100100, //BLUE
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110,
+
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100};
+
+const uint8_t WS2812_off[] = {
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100};
+
+const uint8_t WS2812_red[] = {
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100};
+
+const uint8_t WS2812_blue[] = {
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+	0b11011011, 0b01101101, 0b10110110};
+
+const uint8_t WS2812_green[] = {
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100};
+
+uint8_t WS2182_RPMActual[12*9];
+
+const uint8_t WS2812_CLTPattern[] = {
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //YELLOW
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100};
+
+const uint8_t WS2812_FuelPattern[] = {
+	0b10010010, 0b01001001, 0b00100100, //RED
+	0b11011011, 0b01101101, 0b10110110,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,
+
+	0b11011011, 0b01101101, 0b10110110, //GREEN
+	0b10010010, 0b01001001, 0b00100100,
+	0b10010010, 0b01001001, 0b00100100,};
+
+
+uint8_t WS2812_CLTFuelActual[5*9];
+
+void ws2812_init(){
+	//TODO 50us low level state on every ws2812
+}
+
+void ws2812_displayRPM(uint8_t value){
+
+	//TODO podnieœ odpowiedni pin z tranzystorem dla RPM
+
+	if (value>12){
+		for(uint8_t i=0; i<12; i++){
+			memcpy(WS2182_RPMActual+(i*9), WS2812_red, 9);
+		}
+	} else {
+		memcpy(WS2182_RPMActual, WS2812_RPMPattern, value*9);
+		for (uint8_t i=value; i<12; i++){
+			memcpy(WS2182_RPMActual+(i*9), WS2812_off, 9);
+		}
+	}
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2182_RPMActual, 9*12);
+
+	//TODO opusc odpowiedni pin z transyztorem dla RPM
+
+}
+
+void ws2812_displayCLT(uint8_t value){
+
+	//TODO podnieœ odpowiedni pin z tranzystorem dla CLT
+
+	if (value==0){
+		for (uint8_t i=0; i<5; i++){
+			memcpy(WS2812_CLTFuelActual+(i*9), WS2812_off, 9);
+		}
+	} else if (value==1) {
+		memcpy(WS2812_CLTFuelActual, WS2812_blue, 9);
+		for (uint8_t i=1; i<5; i++){
+			memcpy(WS2812_CLTFuelActual+(i*9), WS2812_off, 9);
+		}
+	} else 	if (value>6){
+		for(uint8_t i=0; i<5; i++){
+			memcpy(WS2812_CLTFuelActual+(i*9), WS2812_red, 9);
+		}
+	} else { //2-6
+		memcpy(WS2812_CLTFuelActual, WS2812_CLTPattern, (value-1)*9);
+		for (uint8_t i=value-1; i<5; i++){
+			memcpy(WS2812_CLTFuelActual+(i*9), WS2812_off, 9);
+		}
+	}
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_CLTFuelActual, 9*5);
+
+	//TODO opusc odpowiedni pin z transyztorem dla CLT
+
+}
+
+void ws2812_displayFuel(uint8_t value){
+
+	//TODO podnieœ odpowiedni pin z tranzystorem dla Fuel
+
+	if (value>5) value=5;
+
+	memcpy(WS2812_CLTFuelActual, WS2812_FuelPattern, value*9);
+	for (uint8_t i=value; i<5; i++){
+		memcpy(WS2812_CLTFuelActual+(i*9), WS2812_off, 9);
+	}
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_CLTFuelActual, 9*5);
+
+	//TODO opusc odpowiedni pin z transyztorem dla Fuel
+
+}
+
+
+
+

@@ -22,7 +22,7 @@ void SnapshotMaker_makeSnapshot(){
 	volatile uint16_t* currentDataPointer = getCurrentData();
 
 	/** Take mutex for current data **/
-	if (osMutexWait(currentDataMutexHandle, 500)!=osOK){
+	if (osMutexWait(currentDataMutexHandle, 10)!=osOK){
 		LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
 		return;
 	}
