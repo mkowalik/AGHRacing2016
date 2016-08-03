@@ -83,6 +83,7 @@ TaskHandle_t saveActualBytesFromECUTaskHandle;
 TaskHandle_t ledBlinkingTaskHandle;
 TaskHandle_t SDCardSaverTaskHandle;
 TaskHandle_t DashboardTaskHandle;
+TaskHandle_t ledSteeringWheelTaskHandle;
 
 osMutexId currentDataMutexHandle;
 
@@ -115,6 +116,14 @@ void StartLEDSteeringWheelTask(void const * argument);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+uint8_t UartReady = 0;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
+{
+  /* Set transmission flag: transfer complete */
+  UartReady = 1;
+}
 
 /* USER CODE END 0 */
 
@@ -153,7 +162,7 @@ int main(void)
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
   UART1_ReceiveDataFromECU_DMA_init(dataPointer);
 
-  //TODO Debug CAN ponizej
+  /*//TODO Debug CAN ponizej
   hcan1.pTxMsg->DLC = 1;
   hcan1.pTxMsg->Data[0] = 156;
   hcan1.pTxMsg->StdId = 1;
@@ -164,6 +173,24 @@ int main(void)
   HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
 
   CanRxMsgTypeDef* msg = hcan1.pRxMsg;
+  */
+
+//  while (1){
+//	  gearDisplay_init();
+//	  ws2812_init();
+//
+//	  for (uint8_t i=0; i<20; i++){
+//		  gearDisplay_displayDigit(i%10, i%2);
+//		  ws2812_displayRPM(i);
+//		  DelayMicroseconds(500);
+//		  ws2812_displayCLT(i);
+//		  DelayMicroseconds(500);
+//		  ws2812_displayFuel(i);
+//		  DelayMicroseconds(500);
+//		  ws2812_displayAlerts(i, i, i);
+//		  HAL_Delay(500);
+//	  }
+//  }
 
   /* USER CODE END 2 */
 
@@ -206,9 +233,8 @@ int main(void)
   osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityNormal, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
 
-  //osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityLow, 0, 128);
-  //ledBlinkingTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
-
+  osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityHigh, 0, 1280);
+  ledSteeringWheelTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -218,6 +244,7 @@ int main(void)
  
 
   /* Start scheduler */
+
   osKernelStart();
   
   /* We should never get here as control is now taken by the scheduler */
@@ -383,7 +410,7 @@ void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; //TODO Debug
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
@@ -587,6 +614,8 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 void StartSaveActualBytesFromECUTask(void const * argument){
 
+//	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, testData, 256);
+
 	UART1_ReceiveDataFromECU_DMA();
 
 	TickType_t xLastWakeTime = osKernelSysTick();
@@ -679,7 +708,7 @@ void StartDashboardTask(void const * argument){
 	while(1){
 		if (lastDashboardRefreshCouter%10==0){
 			dash_displayCurrentData(actualDisplayingValueChannelIndex);
-			dash_displayActualGear();
+			//dash_displayActualGear(); //TODO sensor doesn't work
 			lastDashboardRefreshCouter=0;
 		}
 		if (dash_updateButtonValue()){
@@ -690,9 +719,16 @@ void StartDashboardTask(void const * argument){
 	}
 }
 
-uint8_t lastRPMvalue = 0;
-uint8_t lastCLTvalue = 0;
-uint8_t lastFuelvalue = 0;
+
+#define RPM_LED_NUMBER	13
+/*  								 		     GREEN  GREEN  GREEN  GREEN  BLUE   BLUE   BLUE   BLUE   RED    RED    RED    RED 	 ALL RED 		*/
+const uint16_t rpm_led_values[RPM_LED_NUMBER] = {1000, 7000,  7500,  8000,  8500,  9000,  9500,  10000,  10500, 11000, 11500, 12000,   12500 };
+
+
+#define CLT_LED_NUMBER	6
+/*  								 			 GREEN  GREEN  GREEN  YELLOW  RED	ALL RED*/
+const uint16_t clt_led_values[CLT_LED_NUMBER] = {60,    70,    80,    85,     90,        95};
+
 
 void StartLEDSteeringWheelTask(void const * argument){
 
@@ -701,22 +737,55 @@ void StartLEDSteeringWheelTask(void const * argument){
 	ws2812_init();
 
 	while(1){
-		for (int i=0; i<25; i++){
-		  ws2812_displayRPM(i);
-			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
-		}
-		ws2812_displayRPM(0);
-		HAL_Delay(1);
 
-		for (int i=0; i<15; i++){
-		  ws2812_displayCLT(i);
-			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
+		uint8_t led_number = 0;
+		uint16_t value = getCurrentDataForChannel(ECU_RPM);
+
+		while(led_number<RPM_LED_NUMBER && value >= rpm_led_values[led_number]){
+			led_number++;
+		}
+		if (value > DataTypes_highAlert[ECU_RPM]){
+			led_number = RPM_LED_NUMBER;
 		}
 
-		for (int i=0; i<15; i++){
-		  ws2812_displayFuel(i);
-			osDelayUntil((uint32_t*) &xLastWakeTime, 500);
+		DelayMicroseconds(500);
+		ws2812_displayRPM(led_number);
+
+
+		led_number = 0;
+		value = getCurrentDataForChannel(ECU_CLT);
+
+		while (led_number<CLT_LED_NUMBER && value >= clt_led_values[led_number]){
+			led_number++;
 		}
+		led_number++;
+		if (value > DataTypes_highAlert[ECU_CLT]){
+			led_number = CLT_LED_NUMBER+1;
+		} else if (value < DataTypes_lowAlert[ECU_CLT]){
+			led_number = 1;
+		}
+		DelayMicroseconds(500);
+		ws2812_displayCLT(led_number);
+
+
+		DelayMicroseconds(500);
+		ws2812_displayFuel(0);
+
+
+		uint8_t led1_number = 0;
+		value = getCurrentDataForChannel(ECU_BATT);
+
+		if (value<DataTypes_lowAlert[ECU_BATT] + 1*DataTypes_divider[ECU_BATT]){
+			led1_number = 3;
+		}
+		if (value<DataTypes_lowAlert[ECU_BATT]){
+			led1_number = 4;
+		}
+
+		DelayMicroseconds(500);
+		ws2812_displayAlerts(led1_number, 0, 0);
+
+		osDelayUntil((uint32_t*) &xLastWakeTime, 50);
 	}
 }
 

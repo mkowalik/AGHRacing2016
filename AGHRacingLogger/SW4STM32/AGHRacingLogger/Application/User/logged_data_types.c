@@ -24,7 +24,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMaxValue[ECU_RPM]= 9000;
 	DataTypes_unitString[ECU_RPM]= "RPM";
 	DataTypes_fullName[ECU_RPM]= "ECU_RPM";
-	DataTypes_highAlert[ECU_RPM]= 8500;
+	DataTypes_highAlert[ECU_RPM]= 12000;
 	DataTypes_AlertMode[ECU_RPM]= DATA_ONLY_HIGH_VALUE_ALERT;
 
 	DataTypes_divider[ECU_MAP_SENSOR]= 1;
@@ -56,7 +56,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMaxValue[ECU_BATT]= 20;
 	DataTypes_unitString[ECU_BATT]= "V";
 	DataTypes_fullName[ECU_BATT]= "Battery voltage";
-	DataTypes_lowAlert[ECU_BATT]= 8;
+	DataTypes_lowAlert[ECU_BATT]= 9*DataTypes_divider[ECU_BATT];
 	DataTypes_AlertMode[ECU_BATT]= DATA_ONLY_LOW_VALUE_ALERT;
 
 	DataTypes_divider[ECU_IGN_ANGLE]= 2;
@@ -213,7 +213,8 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMaxValue[ECU_CLT]= 220;
 	DataTypes_unitString[ECU_CLT]= "C";
 	DataTypes_fullName[ECU_CLT]= "ECU_CLT";
-	DataTypes_highAlert[ECU_CLT]= 105;
+	DataTypes_lowAlert[ECU_CLT]= 50;
+	DataTypes_highAlert[ECU_CLT]= 95;
 	DataTypes_AlertMode[ECU_CLT]= DATA_ONLY_HIGH_VALUE_ALERT;
 
 	DataTypes_divider[ECU_TABLES_SET]= 1;

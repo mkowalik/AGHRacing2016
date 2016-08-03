@@ -5,7 +5,7 @@
 #include "logged_data_types.h"
 
 #define DEFAULT_DASHBOARD_FUNCTION_INDEX			0
-#define NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS		5
+#define NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS		7
 
 void dash_displayCurrentData(uint8_t dataChannel);
 void dash_init();

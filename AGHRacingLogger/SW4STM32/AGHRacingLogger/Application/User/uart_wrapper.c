@@ -27,8 +27,19 @@ void UART2_TransmitData(volatile uint8_t* data, uint16_t size){
 volatile uint8_t* ecuDataPointer;
 
 void UART1_ReceiveDataFromECU_DMA_init(volatile uint8_t* ecuDataPointerArg){
+
 	ecuDataPointer = ecuDataPointerArg;
+
+	//
+	HAL_StatusTypeDef status;
+	uint8_t tmpData[5];
+	do {
+		status = HAL_UART_Receive(&huart1, tmpData, 1, 50);
+		HAL_UART_IRQHandler(&huart1);
+	} while ((status!=HAL_OK && status!=HAL_TIMEOUT) || (huart1.ErrorCode != HAL_UART_ERROR_NONE));
+
 }
+
 
 void UART1_ReceiveDataFromECU_DMA(){
 	if (!uart1_stopped) return;
@@ -38,9 +49,7 @@ void UART1_ReceiveDataFromECU_DMA(){
 	}	//TODO jakos zrobic zeby bylo non-blocking
 
 	/* Enable the UART Data Register not empty Interrupt */
-	//HAL_UART_Receive(&huart1, (uint8_t*)ecuDataPointer, 1280, ECU_BUFFER_SIZE);//TODO bez tego z jakiegos powodu nie dziala :-/
-
-	int a = 4;//TODO DEBUG
+//	HAL_UART_Receive(&huart1, (uint8_t*)ecuDataPointer, 1280, ECU_BUFFER_SIZE);//TODO bez tego z jakiegos powodu nie dziala :-/
 
 	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuDataPointer, ECU_BUFFER_SIZE);
 	uart1_stopped = 0;

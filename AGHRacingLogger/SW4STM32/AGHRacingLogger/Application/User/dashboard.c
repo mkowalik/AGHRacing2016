@@ -13,7 +13,7 @@ static uint8_t lastDisplayedFunctionIndex;
 
 static uint16_t lastDisplayedGearValue;
 
-uint8_t avaliableFunctions[] = {ECU_BATT, ECU_CLT, ECU_OIL_PRESSURE, ECU_OIL_TEMP, ECU_RPM}; //TODO przeniesc do pliku .h
+uint8_t avaliableFunctions[] = {ECU_BATT, ECU_CLT, ECU_TPS, ECU_RPM, ECU_WBO_LAMBDA, ECU_WBO_AFR, ECU_OIL_PRESSURE}; //TODO przeniesc do pliku .h
 
 void display_value(uint16_t value, uint8_t channel){
 
