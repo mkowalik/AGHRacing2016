@@ -1,0 +1,72 @@
+Protel Design System Design Rule Check
+PCB File : C:\Users\Public\Documents\Altium\Projects\Dashboard\PCB1.PcbDoc
+Date     : 2016-07-10
+Time     : 19:28:58
+
+Processing Rule : Modified Polygon (Allow modified: No), (Allow shelved: No)
+Rule Violations :0
+
+Processing Rule : Net Antennae (Tolerance=0mil) (All)
+Rule Violations :0
+
+Processing Rule : Silk to Silk (Clearance=10mil) (All),(All)
+   Violation between Silk To Silk Clearance Constraint: (7.935mil < 10mil) Between Text "R1" (1299.213mil,4842.52mil) on Top Overlay And Text "R2" (1299.213mil,4921.26mil) on Top Overlay Silk Text to Silk Clearance [7.935mil]
+   Violation between Silk To Silk Clearance Constraint: (7.936mil < 10mil) Between Text "C1" (1299.213mil,4763.779mil) on Top Overlay And Text "R1" (1299.213mil,4842.52mil) on Top Overlay Silk Text to Silk Clearance [7.936mil]
+   Violation between Silk To Silk Clearance Constraint: (7.936mil < 10mil) Between Text "C3" (1909.449mil,3799.213mil) on Top Overlay And Text "C4" (1909.449mil,3877.953mil) on Top Overlay Silk Text to Silk Clearance [7.936mil]
+   Violation between Silk To Silk Clearance Constraint: (7.935mil < 10mil) Between Text "C1" (1299.213mil,4763.779mil) on Top Overlay And Text "C2" (1299.213mil,4685.039mil) on Top Overlay Silk Text to Silk Clearance [7.935mil]
+   Violation between Silk To Silk Clearance Constraint: (7.935mil < 10mil) Between Text "D2" (2166.496mil,5283.11mil) on Top Overlay And Text "D3" (2166.496mil,5361.851mil) on Top Overlay Silk Text to Silk Clearance [7.935mil]
+   Violation between Silk To Silk Clearance Constraint: (7.936mil < 10mil) Between Text "D1" (2166.496mil,5204.37mil) on Top Overlay And Text "D2" (2166.496mil,5283.11mil) on Top Overlay Silk Text to Silk Clearance [7.936mil]
+   Violation between Silk To Silk Clearance Constraint: (7.935mil < 10mil) Between Text "C6" (2304.291mil,5283.11mil) on Top Overlay And Text "C7" (2304.291mil,5361.851mil) on Top Overlay Silk Text to Silk Clearance [7.935mil]
+   Violation between Silk To Silk Clearance Constraint: (3.644mil < 10mil) Between Text "C5" (2303.15mil,5208.662mil) on Top Overlay And Text "C6" (2304.291mil,5283.11mil) on Top Overlay Silk Text to Silk Clearance [3.644mil]
+Rule Violations :8
+
+Processing Rule : Silk To Solder Mask (Clearance=10mil) (IsPad),(All)
+   Violation between Silk To Solder Mask Clearance Constraint: (8.525mil < 10mil) Between Text "C5" (2303.15mil,5208.662mil) on Top Overlay And Pad D3-1(2410.59mil,5165.197mil) on Top Layer [Top Overlay] to [Top Solder] clearance [8.525mil]
+Rule Violations :1
+
+Processing Rule : Minimum Solder Mask Sliver (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Hole To Hole Clearance (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Hole Size Constraint (Min=1mil) (Max=100mil) (All)
+   Violation between Hole Size Constraint: (118.11mil > 100mil) Pad DISP2-(1092.52mil,4015.748mil) on Multi-Layer Actual Hole Size = 118.11mil
+   Violation between Hole Size Constraint: (118.11mil > 100mil) Pad DISP2-(1092.52mil,2736.22mil) on Multi-Layer Actual Hole Size = 118.11mil
+   Violation between Hole Size Constraint: (118.11mil > 100mil) Pad DISP2-(2490.157mil,4015.748mil) on Multi-Layer Actual Hole Size = 118.11mil
+   Violation between Hole Size Constraint: (118.11mil > 100mil) Pad DISP2-(2490.157mil,2736.22mil) on Multi-Layer Actual Hole Size = 118.11mil
+   Violation between Hole Size Constraint: (118.11mil > 100mil) Pad P1-(2126.181mil,2177.323mil) on Multi-Layer Actual Hole Size = 118.11mil
+   Violation between Hole Size Constraint: (125.984mil > 100mil) Pad J1-17(1200.787mil,1494.096mil) on Multi-Layer Actual Hole Size = 125.984mil
+   Violation between Hole Size Constraint: (125.984mil > 100mil) Pad J1-16(1200.787mil,2478.346mil) on Multi-Layer Actual Hole Size = 125.984mil
+Rule Violations :7
+
+Processing Rule : Height Constraint (Min=0mil) (Max=1000mil) (Prefered=500mil) (All)
+Rule Violations :0
+
+Processing Rule : Power Plane Connect Rule(Relief Connect )(Expansion=20mil) (Conductor Width=10mil) (Air Gap=10mil) (Entries=4) (All)
+Rule Violations :0
+
+Processing Rule : Clearance Constraint (Gap=10mil) (All),(All)
+Rule Violations :0
+
+Processing Rule : Un-Routed Net Constraint ( (All) )
+Rule Violations :0
+
+Processing Rule : Short-Circuit Constraint (Allowed=No) (All),(All)
+Rule Violations :0
+
+Processing Rule : Room U_OLED (Bounding Region = (984.252mil, 2519.685mil, 2598.425mil, 4173.228mil) (InComponentClass('U_OLED'))
+Rule Violations :0
+
+Processing Rule : Room U_GearDisplay (Bounding Region = (1000mil, 4251.968mil, 2204.724mil, 5393.701mil) (InComponentClass('U_GearDisplay'))
+Rule Violations :0
+
+Processing Rule : Room Main (Bounding Region = (392.913mil, 1368.661mil, 2479.528mil, 2667.874mil) (InComponentClass('Main'))
+Rule Violations :0
+
+Processing Rule : Room U_RGB (Bounding Region = (2224.409mil, 4181.102mil, 2579.882mil, 5322.48mil) (InComponentClass('U_RGB'))
+Rule Violations :0
+
+
+Violations Detected : 16
+Time Elapsed        : 00:00:02
