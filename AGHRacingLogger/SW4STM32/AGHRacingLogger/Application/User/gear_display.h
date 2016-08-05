@@ -6,5 +6,6 @@
 
 void gearDisplay_init();
 void gearDisplay_displayDigit(uint8_t digit, uint8_t dot);
+void gearDisplay_offDisplay(uint8_t dot);
 
 #endif //__gear_display_H

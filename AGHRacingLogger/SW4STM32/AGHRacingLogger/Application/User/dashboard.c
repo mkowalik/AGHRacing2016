@@ -121,12 +121,17 @@ uint8_t dash_updateButtonValue(){
 
 }
 
-void dash_displayActualGear(){
-	uint16_t data = getCurrentDataForChannel(SENSOR_GEAR);
+static uint16_t lastDisplayedNeutralValue;
 
-	if (data!=lastDisplayedGearValue){
-		gearDisplay_displayDigit(data, (data==0));
-		lastDisplayedGearValue = data;
+void dash_displayActualGear(){
+	uint16_t dataNeutral = getCurrentDataForChannel(SENSOR_NEUTRAL);
+//	uint16_t dataGear_virtual = getCurrentDataForChannel(VIRTUAL_GEAR);	//TODO virtual gear sensor
+
+	if ((dataNeutral!=lastDisplayedNeutralValue)/* || (dataGear_virtual!=lastDisplayedGearValue)*/){	//TODO virtual gear sensor
+//		gearDisplay_displayDigit(dataGear_virtual, (dataNeutral>0));	//TODO virtual gear sensor
+		gearDisplay_offDisplay((dataNeutral>0));
+		lastDisplayedNeutralValue = dataNeutral;
+//		lastDisplayedGearValue = dataGear_virtual;	//TODO virtual gear sensor
 	}
 
 }

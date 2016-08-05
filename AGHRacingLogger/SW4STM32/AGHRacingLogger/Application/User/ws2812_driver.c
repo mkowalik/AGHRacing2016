@@ -195,11 +195,11 @@ static uint8_t LED1_Alert_number_prev=0;
 static uint8_t LED2_Alert_number_prev=0;
 static uint8_t LED3_Alert_number_prev=0;
 
-static uint8_t displayRPMEventCounter = 0;
+static uint8_t displayRPMEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
 void ws2812_displayRPM(uint8_t value){
 
-	displayRPMEventCounter = (displayRPMEventCounter+1)%10;
+	displayRPMEventCounter = (displayRPMEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
 
 	if (value==LED_RPM_number_prev && displayRPMEventCounter!=0) return;
 
@@ -223,13 +223,15 @@ void ws2812_displayRPM(uint8_t value){
 
 	LED_RPM_number_prev = value;
 
+	displayRPMEventCounter = 0;
+
 }
 
-static uint8_t displayCLTEventCounter = 0;
+static uint8_t displayCLTEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
 void ws2812_displayCLT(uint8_t value){
 
-	displayCLTEventCounter = (displayCLTEventCounter+1)%10;
+	displayCLTEventCounter = (displayCLTEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
 
 	if (value==LED_CLT_number_prev && displayCLTEventCounter!=0) return;
 
@@ -262,13 +264,15 @@ void ws2812_displayCLT(uint8_t value){
 
 	LED_CLT_number_prev = value;
 
+	displayCLTEventCounter=0;
+
 }
 
-static uint8_t displayFuelEventCounter = 0;
+static uint8_t displayFuelEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
 void ws2812_displayFuel(uint8_t value){
 
-	displayFuelEventCounter = (displayFuelEventCounter+1)%10;
+	displayFuelEventCounter = (displayFuelEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
 
 	if (value==LED_Fuel_number_prev && displayFuelEventCounter!=0) return;
 
@@ -288,12 +292,17 @@ void ws2812_displayFuel(uint8_t value){
 
 	LED_Fuel_number_prev = value;
 
+	displayFuelEventCounter = 0;
+
 }
 
+static uint8_t displayAlertsEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
 void ws2812_displayAlerts(uint8_t led1, uint8_t led2, uint8_t led3){
 
-	if(led1==LED1_Alert_number_prev && led2==LED2_Alert_number_prev && led3==LED3_Alert_number_prev) return;
+	displayAlertsEventCounter = (displayAlertsEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
+
+	if(led1==LED1_Alert_number_prev && led2==LED2_Alert_number_prev && led3==LED3_Alert_number_prev && displayAlertsEventCounter!=0) return;
 
 	uint8_t leds[] = {led1, led2, led3};
 
@@ -327,6 +336,8 @@ void ws2812_displayAlerts(uint8_t led1, uint8_t led2, uint8_t led3){
 	LED1_Alert_number_prev=led1;
 	LED2_Alert_number_prev=led2;
 	LED3_Alert_number_prev=led3;
+
+	displayAlertsEventCounter = 0;
 
 }
 

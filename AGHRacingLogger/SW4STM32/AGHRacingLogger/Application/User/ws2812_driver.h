@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define 	REFRESH_LEDS_CYCLES_NUMBER	5
+
 void ws2812_init();
 /**
  * Argument uint8_t value:

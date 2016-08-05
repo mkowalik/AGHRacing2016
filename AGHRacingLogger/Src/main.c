@@ -50,6 +50,7 @@
 #include "gear_display.h"
 #include "delay_timer6.h"
 #include "ws2812_driver.h"
+#include "can_sensors.h"
 
 /* USER CODE END Includes */
 
@@ -80,6 +81,7 @@ osThreadId defaultTaskHandle;
 
 TaskHandle_t saveActualDataTaskHandle;
 TaskHandle_t saveActualBytesFromECUTaskHandle;
+TaskHandle_t saveActualBytesFromCanSensorsTaskHandle;
 TaskHandle_t ledBlinkingTaskHandle;
 TaskHandle_t SDCardSaverTaskHandle;
 TaskHandle_t DashboardTaskHandle;
@@ -108,6 +110,7 @@ void StartDefaultTask(void const * argument);
 
 void StartMakeDataSnaphotTask(void const * argument);
 void StartSaveActualBytesFromECUTask(void const * argument);
+void StartSaveActualBytesFromCanSensorsTask(void const * argument);
 void StartLedBlinkingTask(void const * argument);
 void StartSDCardSaverTask(void const * argument);
 void StartDashboardTask(void const * argument);
@@ -116,14 +119,6 @@ void StartLEDSteeringWheelTask(void const * argument);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-uint8_t UartReady = 0;
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-  /* Set transmission flag: transfer complete */
-  UartReady = 1;
-}
 
 /* USER CODE END 0 */
 
@@ -162,7 +157,7 @@ int main(void)
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
   UART1_ReceiveDataFromECU_DMA_init(dataPointer);
 
-  /*//TODO Debug CAN ponizej
+  //TODO Debug CAN ponizej
   hcan1.pTxMsg->DLC = 1;
   hcan1.pTxMsg->Data[0] = 156;
   hcan1.pTxMsg->StdId = 1;
@@ -173,24 +168,6 @@ int main(void)
   HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
 
   CanRxMsgTypeDef* msg = hcan1.pRxMsg;
-  */
-
-//  while (1){
-//	  gearDisplay_init();
-//	  ws2812_init();
-//
-//	  for (uint8_t i=0; i<20; i++){
-//		  gearDisplay_displayDigit(i%10, i%2);
-//		  ws2812_displayRPM(i);
-//		  DelayMicroseconds(500);
-//		  ws2812_displayCLT(i);
-//		  DelayMicroseconds(500);
-//		  ws2812_displayFuel(i);
-//		  DelayMicroseconds(500);
-//		  ws2812_displayAlerts(i, i, i);
-//		  HAL_Delay(500);
-//	  }
-//  }
 
   /* USER CODE END 2 */
 
@@ -223,6 +200,9 @@ int main(void)
 
   osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
   saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
+
+  osThreadDef(saveActualBytesFromCanSensorsTask, StartSaveActualBytesFromCanSensorsTask, osPriorityHigh, 0, 128);
+  saveActualBytesFromCanSensorsTaskHandle = osThreadCreate(osThread(saveActualBytesFromCanSensorsTask), NULL);
 
   //osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
   //SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
@@ -313,7 +293,7 @@ void MX_CAN1_Init(void)
 
   hcan1.Instance = CAN1;
   hcan1.Init.Prescaler = 21;
-  hcan1.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SJW = CAN_SJW_2TQ;
   hcan1.Init.BS1 = CAN_BS1_9TQ;
   hcan1.Init.BS2 = CAN_BS2_6TQ;
@@ -627,6 +607,20 @@ void StartSaveActualBytesFromECUTask(void const * argument){
 
 }
 
+void StartSaveActualBytesFromCanSensorsTask(void const * argument){
+
+	canSensors_ReceiveDataFromSensors_init();
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+
+	while (1){
+		canSensors_saveCurrentData();
+		osDelayUntil((uint32_t*) &xLastWakeTime, 4);
+	}
+
+
+}
+
 void StartLedBlinkingTask(void const * argument){
 
 	while (1){
@@ -708,7 +702,7 @@ void StartDashboardTask(void const * argument){
 	while(1){
 		if (lastDashboardRefreshCouter%10==0){
 			dash_displayCurrentData(actualDisplayingValueChannelIndex);
-			//dash_displayActualGear(); //TODO sensor doesn't work
+			dash_displayActualGear(); //TODO sensor doesn't work
 			lastDashboardRefreshCouter=0;
 		}
 		if (dash_updateButtonValue()){

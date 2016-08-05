@@ -46,6 +46,22 @@ void gearDisplay_displayDigit(uint8_t digit, uint8_t dot){
 	DelayMicroseconds(1);
 }
 
+void gearDisplay_offDisplay(uint8_t dot){
+
+	uint8_t val = 0b00000000;
+	if (dot){
+		val |= (0b10000000);
+	}
+
+	HAL_SPI_Transmit(&hspi1, &val, 1, 1);
+	HAL_SPI_Transmit(&hspi1, &val, 1, 1);
+	DelayMicroseconds(1);
+	HAL_GPIO_WritePin(GearDisplay_ChipSelect_GPIO_Port, GearDisplay_ChipSelect_Pin, GPIO_PIN_SET);
+	DelayMicroseconds(1);
+	HAL_GPIO_WritePin(GearDisplay_ChipSelect_GPIO_Port, GearDisplay_ChipSelect_Pin, GPIO_PIN_RESET);
+	DelayMicroseconds(1);
+}
+
 /* test
 	  k = 0xFF&(~(1<<(i%8)));
 	  HAL_SPI_Transmit(&hspi1, &k, 1, 10);

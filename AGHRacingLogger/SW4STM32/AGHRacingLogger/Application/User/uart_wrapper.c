@@ -30,7 +30,6 @@ void UART1_ReceiveDataFromECU_DMA_init(volatile uint8_t* ecuDataPointerArg){
 
 	ecuDataPointer = ecuDataPointerArg;
 
-	//
 	HAL_StatusTypeDef status;
 	uint8_t tmpData[5];
 	do {

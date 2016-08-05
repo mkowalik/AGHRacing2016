@@ -2,7 +2,8 @@
 #include "current_data_provider.h"
 #include "uart_wrapper.h"
 #include "logged_data_types.h"
-#include <string.h>
+#include "string.h"
+#include "stdio.h"
 
 void Telemetry_sendActualData(void const* args){
 

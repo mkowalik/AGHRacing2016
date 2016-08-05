@@ -72,7 +72,7 @@ volatile uint8_t* ECU_getNextReceivedBytePointer(){
 }
 
 void ECU_saveCurrentData(void const * args){
-	while (ECUDataLeftIndex + BYTES_IN_ECU_FRAME <= ECUDataRightIndex){
+	while (ECUDataLeftIndex + ECU_BYTES_IN_FRAME <= ECUDataRightIndex){
 
 		if (ECUDataRightIndex-ECUDataLeftIndex > ECU_BUFFER_SIZE){
 			  while(1){
@@ -91,7 +91,7 @@ void ECU_saveCurrentData(void const * args){
 
 		uint8_t checksum = ((uint16_t)actECUFrame.channel + actECUFrame.idChar + actECUFrame.valueH + actECUFrame.valueL) % 256;
 
-		if ((actECUFrame.idChar != ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
+		if ((actECUFrame.idChar != ECU_ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
 			ECUDataLeftIndex++;
 			continue;
 		}
