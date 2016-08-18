@@ -46,6 +46,11 @@
 #include "uart_wrapper.h"
 #include "stm32f407xx.h"
 #include "freertos.h"
+#include "dashboard.h"
+#include "gear_display.h"
+#include "delay_timer6.h"
+#include "ws2812_driver.h"
+#include "can_sensors.h"
 
 /* USER CODE END Includes */
 
@@ -56,6 +61,13 @@ RTC_HandleTypeDef hrtc;
 
 SD_HandleTypeDef hsd;
 HAL_SD_CardInfoTypedef SDCardInfo;
+
+SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi1_tx;
+DMA_HandleTypeDef hdma_spi2_tx;
+
+TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -69,7 +81,13 @@ osThreadId defaultTaskHandle;
 
 TaskHandle_t saveActualDataTaskHandle;
 TaskHandle_t saveActualBytesFromECUTaskHandle;
+TaskHandle_t saveActualBytesFromCanSensorsTaskHandle;
 TaskHandle_t ledBlinkingTaskHandle;
+TaskHandle_t SDCardSaverTaskHandle;
+TaskHandle_t DashboardTaskHandle;
+TaskHandle_t ledSteeringWheelTaskHandle;
+
+osMutexId currentDataMutexHandle;
 
 /* USER CODE END PV */
 
@@ -82,6 +100,9 @@ static void MX_RTC_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_TIM6_Init(void);
+static void MX_SPI2_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -89,7 +110,11 @@ void StartDefaultTask(void const * argument);
 
 void StartMakeDataSnaphotTask(void const * argument);
 void StartSaveActualBytesFromECUTask(void const * argument);
+void StartSaveActualBytesFromCanSensorsTask(void const * argument);
 void StartLedBlinkingTask(void const * argument);
+void StartSDCardSaverTask(void const * argument);
+void StartDashboardTask(void const * argument);
+void StartLEDSteeringWheelTask(void const * argument);
 
 /* USER CODE END PFP */
 
@@ -120,16 +145,38 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_FATFS_Init();
+  MX_SPI1_Init();
+  MX_TIM6_Init();
+  MX_SPI2_Init();
 
   /* USER CODE BEGIN 2 */
 
+  DataTypes_initDefaults();
+
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
-  UART1_ReceiveDataFromECU_DMA(dataPointer);
+  UART1_ReceiveDataFromECU_DMA_init(dataPointer);
+
+  //TODO Debug CAN ponizej
+  hcan1.pTxMsg->DLC = 1;
+  hcan1.pTxMsg->Data[0] = 156;
+  hcan1.pTxMsg->StdId = 1;
+  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
+  hcan1.pTxMsg->IDE = CAN_ID_STD;
+  HAL_CAN_Transmit(&hcan1, 1000);
+
+  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+
+  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
 
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+
+  osMutexDef(currentDataMutex);
+  currentDataMutexHandle = osMutexCreate(osMutex(currentDataMutex));
+
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
@@ -142,20 +189,32 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 1280);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
 
-  osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
-  saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
+  //osThreadDef(saveActualDataTask, StartMakeDataSnaphotTask, osPriorityHigh, 0, 128);
+  //saveActualDataTaskHandle = osThreadCreate(osThread(saveActualDataTask), NULL);
 
   osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
   saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
 
-  osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityLow, 0, 128);
+  osThreadDef(saveActualBytesFromCanSensorsTask, StartSaveActualBytesFromCanSensorsTask, osPriorityHigh, 0, 128);
+  saveActualBytesFromCanSensorsTaskHandle = osThreadCreate(osThread(saveActualBytesFromCanSensorsTask), NULL);
+
+  //osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
+  //SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
+
+  osThreadDef(DashboardTask, StartDashboardTask, osPriorityHigh, 0, 1280);
+  DashboardTaskHandle = osThreadCreate(osThread(DashboardTask), NULL);
+
+  osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityNormal, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
+
+  osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityHigh, 0, 1280);
+  ledSteeringWheelTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -165,6 +224,7 @@ int main(void)
  
 
   /* Start scheduler */
+
   osKernelStart();
   
   /* We should never get here as control is now taken by the scheduler */
@@ -232,11 +292,11 @@ void MX_CAN1_Init(void)
 {
 
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Prescaler = 21;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SJW = CAN_SJW_1TQ;
-  hcan1.Init.BS1 = CAN_BS1_1TQ;
-  hcan1.Init.BS2 = CAN_BS2_1TQ;
+  hcan1.Init.SJW = CAN_SJW_2TQ;
+  hcan1.Init.BS1 = CAN_BS1_9TQ;
+  hcan1.Init.BS2 = CAN_BS2_6TQ;
   hcan1.Init.TTCM = DISABLE;
   hcan1.Init.ABOM = DISABLE;
   hcan1.Init.AWUM = DISABLE;
@@ -295,7 +355,65 @@ void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 2;
+  hsd.Init.ClockDiv = 50;
+
+}
+
+/* SPI1 init function */
+void MX_SPI1_Init(void)
+{
+
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi1);
+
+}
+
+/* SPI2 init function */
+void MX_SPI2_Init(void)
+{
+
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; //TODO Debug
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi2);
+
+}
+
+/* TIM6 init function */
+void MX_TIM6_Init(void)
+{
+
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 83;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 0xFFFF;
+  HAL_TIM_Base_Init(&htim6);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_ENABLE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig);
 
 }
 
@@ -341,10 +459,14 @@ void MX_DMA_Init(void)
   __DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
 }
 
@@ -361,6 +483,7 @@ void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
+  __GPIOE_CLK_ENABLE();
   __GPIOC_CLK_ENABLE();
   __GPIOH_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
@@ -368,10 +491,33 @@ void MX_GPIO_Init(void)
   __GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin|WS2812_MultiSelect_2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, OTG_FS_PowerSwitchOn_Pin|OLED_DC_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OLED_ChipSelect_GPIO_Port, OLED_ChipSelect_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OLED_RESET_GPIO_Port, OLED_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : GearDisplay_ChipSelect_Pin WS2812_MultiSelect_1_Pin */
+  GPIO_InitStruct.Pin = GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : WS2812_MultiSelect_2_Pin */
+  GPIO_InitStruct.Pin = WS2812_MultiSelect_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(WS2812_MultiSelect_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : OTG_FS_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin;
@@ -386,6 +532,26 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : OLED_ChipSelect_Pin */
+  GPIO_InitStruct.Pin = OLED_ChipSelect_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(OLED_ChipSelect_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Dash_Button_Pin */
+  GPIO_InitStruct.Pin = Dash_Button_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(Dash_Button_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : OLED_DC_Pin OLED_RESET_Pin */
+  GPIO_InitStruct.Pin = OLED_DC_Pin|OLED_RESET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pin : BOOT1_Pin */
   GPIO_InitStruct.Pin = BOOT1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -399,6 +565,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : SD_Card_Select_Pin */
+  GPIO_InitStruct.Pin = SD_Card_Select_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SD_Card_Select_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Dash_Button2_Pin */
+  GPIO_InitStruct.Pin = Dash_Button2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(Dash_Button2_GPIO_Port, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -411,16 +589,35 @@ void StartMakeDataSnaphotTask(void const * argument){
 		SnapshotMaker_makeSnapshot();
 		osDelayUntil((uint32_t*) &xLastWakeTime, 100);
 	}
+
 }
 
 void StartSaveActualBytesFromECUTask(void const * argument){
+
+//	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, testData, 256);
+
+	UART1_ReceiveDataFromECU_DMA();
 
 	TickType_t xLastWakeTime = osKernelSysTick();
 
 	while (1){
 		ECU_saveCurrentData(argument);
-		osDelayUntil((uint32_t*) &xLastWakeTime, 2);
+		osDelayUntil((uint32_t*) &xLastWakeTime, 4);
 	}
+
+}
+
+void StartSaveActualBytesFromCanSensorsTask(void const * argument){
+
+	canSensors_ReceiveDataFromSensors_init();
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+
+	while (1){
+		canSensors_saveCurrentData();
+		osDelayUntil((uint32_t*) &xLastWakeTime, 4);
+	}
+
 
 }
 
@@ -431,7 +628,159 @@ void StartLedBlinkingTask(void const * argument){
 	    osDelay(200);
 	}
 
+}
 
+typedef enum {
+	SDState_Begin, SDState_InitFail, SDState_Saving, SDState_SavingFail, SDState_Stop, SDState_StopFail
+} SD_Thread_State;
+
+SD_Thread_State SDThreadState = SDState_Begin;
+
+void StartSDCardSaverTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+	FRESULT result;
+
+	while (1){
+		switch (SDThreadState){
+		case SDState_Begin:
+		case SDState_InitFail:
+			result = SDCardSaver_init();
+			if (result==FR_OK) {
+				SDThreadState = SDState_Stop;
+			} else {
+				SDThreadState = SDState_InitFail;
+			}
+			break;
+		case SDState_Stop:
+		case SDState_SavingFail:
+			if (SDCardSaver_shouldRecordData()){
+				result = SDCardSaver_initNewFile();
+				if (result==FR_OK){
+					SDThreadState = SDState_Saving;
+				} else {
+					SDThreadState = SDState_SavingFail;
+				}
+			}
+			break;
+		case SDState_Saving:
+			if (SDCardSaver_shouldRecordData()){
+				result = SDCardSaver_saveAllUnsavedData();
+				if (result!=FR_OK){
+					SDThreadState = SDState_SavingFail;
+				}
+			} else {
+				result = SDCardSaver_stopSaving();
+				if (result==FR_OK){
+					SDThreadState = SDState_Stop;
+				}
+			}
+			break;
+		case SDState_StopFail:
+			result = SDCardSaver_stopSaving();
+			if (result==FR_OK){
+				SDThreadState = SDState_Stop;
+			}
+			break;
+		}
+
+		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
+	}
+
+}
+
+uint8_t actualDisplayingValueChannelIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
+uint32_t lastDashboardRefreshCouter;
+
+void StartDashboardTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+	lastDashboardRefreshCouter = 0;
+
+	dash_init();
+	gearDisplay_init();
+	while(1){
+		if (lastDashboardRefreshCouter%10==0){
+			dash_displayCurrentData(actualDisplayingValueChannelIndex);
+			dash_displayActualGear(); //TODO sensor doesn't work
+			lastDashboardRefreshCouter=0;
+		}
+		if (dash_updateButtonValue()){
+			actualDisplayingValueChannelIndex=(actualDisplayingValueChannelIndex+1)%NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS;
+		}
+		lastDashboardRefreshCouter++;
+		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
+	}
+}
+
+
+#define RPM_LED_NUMBER	13
+/*  								 		     GREEN  GREEN  GREEN  GREEN  BLUE   BLUE   BLUE   BLUE   RED    RED    RED    RED 	 ALL RED 		*/
+const uint16_t rpm_led_values[RPM_LED_NUMBER] = {1000, 7000,  7500,  8000,  8500,  9000,  9500,  10000,  10500, 11000, 11500, 12000,   12500 };
+
+
+#define CLT_LED_NUMBER	6
+/*  								 			 GREEN  GREEN  GREEN  YELLOW  RED	ALL RED*/
+const uint16_t clt_led_values[CLT_LED_NUMBER] = {60,    70,    80,    85,     90,        95};
+
+
+void StartLEDSteeringWheelTask(void const * argument){
+
+	TickType_t xLastWakeTime = osKernelSysTick();
+
+	ws2812_init();
+
+	while(1){
+
+		uint8_t led_number = 0;
+		uint16_t value = getCurrentDataForChannel(ECU_RPM);
+
+		while(led_number<RPM_LED_NUMBER && value >= rpm_led_values[led_number]){
+			led_number++;
+		}
+		if (value > DataTypes_highAlert[ECU_RPM]){
+			led_number = RPM_LED_NUMBER;
+		}
+
+		DelayMicroseconds(500);
+		ws2812_displayRPM(led_number);
+
+
+		led_number = 0;
+		value = getCurrentDataForChannel(ECU_CLT);
+
+		while (led_number<CLT_LED_NUMBER && value >= clt_led_values[led_number]){
+			led_number++;
+		}
+		led_number++;
+		if (value > DataTypes_highAlert[ECU_CLT]){
+			led_number = CLT_LED_NUMBER+1;
+		} else if (value < DataTypes_lowAlert[ECU_CLT]){
+			led_number = 1;
+		}
+		DelayMicroseconds(500);
+		ws2812_displayCLT(led_number);
+
+
+		DelayMicroseconds(500);
+		ws2812_displayFuel(0);
+
+
+		uint8_t led1_number = 0;
+		value = getCurrentDataForChannel(ECU_BATT);
+
+		if (value<DataTypes_lowAlert[ECU_BATT] + 1*DataTypes_divider[ECU_BATT]){
+			led1_number = 3;
+		}
+		if (value<DataTypes_lowAlert[ECU_BATT]){
+			led1_number = 4;
+		}
+
+		DelayMicroseconds(500);
+		ws2812_displayAlerts(led1_number, 0, 0);
+
+		osDelayUntil((uint32_t*) &xLastWakeTime, 50);
+	}
 }
 
 
@@ -444,24 +793,6 @@ void StartDefaultTask(void const * argument)
   MX_FATFS_Init();
 
   /* USER CODE BEGIN 5 */
-
-  FATFS ff;
-
-  FRESULT mount_res = f_mount(&ff, "", 1);
-
-  FIL fil;
-
-  FRESULT open_res = f_open(&fil, "/test.txt", FA_READ | FA_WRITE | FA_OPEN_ALWAYS);
-
-  char text[] = "na ekierce siedzi wrona";
-  uint32_t length = strlen(text);
-  uint32_t written;
-
-  int write_res = f_puts(text, &fil);
-
-  FRESULT close_res = f_close(&fil);
-
-  f_mount(0, "", 1);
 
   /* Infinite loop */
   for(;;)

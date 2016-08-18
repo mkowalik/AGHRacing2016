@@ -36,6 +36,9 @@
 #define ECU_DELTA_FPR 29
 #define ECU_FUEL_LEVEL 30
 //#define ECU_SECONDARY_PULSE_WIDTH 7
+#define SENSOR_NEUTRAL 32
+#define SENSOR_GEAR 33
+#define VIRTUAL_GEAR 34
 
 #define CHANNEL_NUMBER 256
 
@@ -48,8 +51,8 @@ typedef enum {
 
 uint8_t DataTypes_divider[CHANNEL_NUMBER];
 uint16_t DataTypes_gaugeDivider[CHANNEL_NUMBER];
-uint16_t DataTypes_gaugeMinValue[CHANNEL_NUMBER];
-uint16_t DataTypes_gaugeMaxValue[CHANNEL_NUMBER];
+int16_t DataTypes_gaugeMinValue[CHANNEL_NUMBER];
+int16_t DataTypes_gaugeMaxValue[CHANNEL_NUMBER];
 DataTypes_AlertModeTypeDef DataTypes_AlertMode[CHANNEL_NUMBER];
 uint16_t DataTypes_lowAlert[CHANNEL_NUMBER];
 uint16_t DataTypes_highAlert[CHANNEL_NUMBER];

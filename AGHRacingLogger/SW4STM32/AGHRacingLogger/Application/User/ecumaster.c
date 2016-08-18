@@ -1,6 +1,11 @@
 #include "ecumaster.h"
 #include "logged_data_types.h"
 #include "current_data_provider.h"
+#include "error_logger.h"
+#include "cmsis_os.h"
+#include "mxconstants.h"
+#include "stm32f4xx_hal.h"
+#include "uart_wrapper.h"
 
 #define ECU_CHANNEL_RPM 1
 #define ECU_CHANNEL_MAP 2
@@ -40,7 +45,13 @@ static volatile uint8_t receivedECUBytes[ECU_BUFFER_SIZE];
 static volatile uint16_t ECUDataLeftIndex = 0;
 static volatile uint16_t ECUDataRightIndex = 0;
 
+extern osMutexId currentDataMutexHandle;
+
 void ECU_receivedByteNotification(){
+	if (ECUDataRightIndex-ECUDataLeftIndex+1>ECU_BUFFER_SIZE){
+		UART1_Stop();
+		return;
+	}
 	ECUDataRightIndex++;
 }
 
@@ -61,7 +72,14 @@ volatile uint8_t* ECU_getNextReceivedBytePointer(){
 }
 
 void ECU_saveCurrentData(void const * args){
-	while (ECUDataLeftIndex + BYTES_IN_ECU_FRAME <= ECUDataRightIndex){
+	while (ECUDataLeftIndex + ECU_BYTES_IN_FRAME <= ECUDataRightIndex){
+
+		if (ECUDataRightIndex-ECUDataLeftIndex > ECU_BUFFER_SIZE){
+			  while(1){
+				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+				  HAL_Delay(50);
+			  }
+		}
 
 		ECUData actECUFrame;
 
@@ -73,7 +91,7 @@ void ECU_saveCurrentData(void const * args){
 
 		uint8_t checksum = ((uint16_t)actECUFrame.channel + actECUFrame.idChar + actECUFrame.valueH + actECUFrame.valueL) % 256;
 
-		if ((actECUFrame.idChar != ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
+		if ((actECUFrame.idChar != ECU_ID_CHAR_VALUE) || (actECUFrame.checksum != checksum)){
 			ECUDataLeftIndex++;
 			continue;
 		}
@@ -179,9 +197,28 @@ void ECU_saveCurrentData(void const * args){
 				break;
 //			case ECU_CHANNEL_SECONDARY_PULSE_WIDTH:
 //				loggedDataChannel =
+			default:
+				ECUDataLeftIndex+=5;//TODO
+				if (ECUDataLeftIndex>ECU_BUFFER_SIZE){
+					ECUDataLeftIndex-=ECU_BUFFER_SIZE;
+					ECUDataRightIndex-=ECU_BUFFER_SIZE;
+				}
+				return;
+
+		}
+
+		/** Take mutex for current data **/
+		if (osMutexWait(currentDataMutexHandle, 10)!=osOK){
+			LOG_warning("Error (timeout probably) while waiting for mutex for current data in data_snapshot_maker.");
+			return;
 		}
 
 		saveCurrentData(loggedDataChannel, actECUFrame.value);
+
+		/** Release mutex for current data **/
+		if (osMutexRelease(currentDataMutexHandle)!=osOK){
+			LOG_warning("Error while releasing mutex for current data in data_snapshot_maker.");
+		}
 
 		ECUDataLeftIndex+=5;
 
@@ -191,4 +228,6 @@ void ECU_saveCurrentData(void const * args){
 		}
 
 	}
+
+	UART1_ReceiveDataFromECU_DMA();
 }

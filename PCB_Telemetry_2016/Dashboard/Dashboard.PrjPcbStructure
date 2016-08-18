@@ -1,0 +1,4 @@
+Record=TopLevelDocument|FileName=Main.SchDoc
+Record=SheetSymbol|SourceDocument=Main.SchDoc|Designator=U_GearDisplay|SchDesignator=U_GearDisplay|FileName=GearDisplay.SchDoc|SymbolType=Normal|RawFileName=GearDisplay.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Main.SchDoc|Designator=U_OLED|SchDesignator=U_OLED|FileName=OLED.SchDoc|SymbolType=Normal|RawFileName=OLED.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Main.SchDoc|Designator=U_RGB|SchDesignator=U_RGB|FileName=RGB.SchDoc|SymbolType=Normal|RawFileName=RGB.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 

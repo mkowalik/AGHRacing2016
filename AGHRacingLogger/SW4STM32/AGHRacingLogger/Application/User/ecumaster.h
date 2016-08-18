@@ -16,9 +16,9 @@ typedef struct {
 	uint8_t checksum;
 } ECUData;
 
-#define BYTES_IN_ECU_FRAME 	5
-#define ECU_BUFFER_SIZE 	(256 * BYTES_IN_ECU_FRAME)
-#define ID_CHAR_VALUE		0xA3
+#define ECU_BYTES_IN_FRAME 	5
+#define ECU_BUFFER_SIZE 	(256 * ECU_BYTES_IN_FRAME)
+#define ECU_ID_CHAR_VALUE		0xA3
 
 void ECU_receivedByteNotification();
 volatile uint16_t ECU_getBytesRightIndex();
