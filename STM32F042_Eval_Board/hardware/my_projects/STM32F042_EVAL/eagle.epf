@@ -1,5 +1,5 @@
 [Eagle]
-Version="07 04 00"
+Version="07 05 00"
 Platform="Windows"
 Serial="62191E841E-LSR-WLM-1EL"
 Globals="Globals"
@@ -7,23 +7,10 @@ Desktop="Desktop"
 
 [Globals]
 AutoSaveProject=1
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/.my_elements.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/crystal.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/frames.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/holes.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/jumper.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/led.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/pinhead.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/rcl.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/supply1.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/supply2.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/switch-tact.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/switch.lbr"
-UsedLibrary="C:/EAGLE-7.4.0/my_lbr/vishay-1.lbr"
 
 [Win_1]
 Type="Control Panel"
-Loc="-8 -31 591 368"
+Loc="606 291 1765 1020"
 State=2
 Number=0
 
