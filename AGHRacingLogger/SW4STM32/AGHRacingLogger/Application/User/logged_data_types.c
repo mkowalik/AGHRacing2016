@@ -56,7 +56,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMaxValue[ECU_BATT]= 20;
 	DataTypes_unitString[ECU_BATT]= "V";
 	DataTypes_fullName[ECU_BATT]= "Battery voltage";
-	DataTypes_lowAlert[ECU_BATT]= 9*DataTypes_divider[ECU_BATT];
+	DataTypes_lowAlert[ECU_BATT]= 10*DataTypes_divider[ECU_BATT];
 	DataTypes_AlertMode[ECU_BATT]= DATA_ONLY_LOW_VALUE_ALERT;
 
 	DataTypes_divider[ECU_IGN_ANGLE]= 2;
@@ -188,7 +188,7 @@ void DataTypes_initDefaults(){
 	DataTypes_gaugeMaxValue[ECU_OIL_PRESSURE]= 12;
 	DataTypes_unitString[ECU_OIL_PRESSURE]= "Bar";
 	DataTypes_fullName[ECU_OIL_PRESSURE]= "Oil pressure";
-	DataTypes_lowAlert[ECU_OIL_PRESSURE]= 0.4;
+	DataTypes_lowAlert[ECU_OIL_PRESSURE]= 1*DataTypes_divider[ECU_OIL_PRESSURE];
 	DataTypes_AlertMode[ECU_OIL_PRESSURE]= DATA_ONLY_LOW_VALUE_ALERT;
 
 	DataTypes_divider[ECU_OIL_TEMP]= 1;

@@ -10,22 +10,15 @@
 
 #include <stdint.h>
 
-#define BYTES_IN_SENSORS_FRAME		6
+#define BYTES_IN_SENSORS_FRAME		2
 #define CAN_SENSORS_BUFFER_SIZE		256
-#define CAN_SENSOR_ID_CHAR_VALUE	0xA3
+
+void canSensors_ReceiveDataFromSensors_init();
+void canSensors_ReceiveDataFromSensors_Start();
+void canSensors_saveCurrentData();
 
 typedef struct {
-
-	union {
-		struct {
-			uint8_t channelL;
-			uint8_t channelH;
-		};
-		uint16_t channel;
-	};
-
-	uint8_t idChar;
-
+	uint32_t channelId;
 	union {
 		struct {
 			uint8_t valueL;
@@ -33,13 +26,7 @@ typedef struct {
 		};
 		uint16_t value;
 	};
-
-	uint8_t checksum;
 } CanSensorsData;
-
-void canSensors_ReceiveDataFromSensors_init();
-void canSensors_ReceiveDataFromSensors_Start();
-void canSensors_saveCurrentData();
 
 
 #endif /* APPLICATION_USER_CAN_SENSORS_H_ */

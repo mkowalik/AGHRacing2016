@@ -12,6 +12,6 @@ volatile uint16_t* getCurrentData(){	//TODO zwrocic to tak, zeby nie dalo sie zm
 	return currentData;
 }
 
-volatile uint32_t getCurrentDataForChannel(uint8_t channel){
+volatile uint16_t getCurrentDataForChannel(uint8_t channel){
 	return currentData[channel];
 }

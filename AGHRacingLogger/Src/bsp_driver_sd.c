@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
-  * @file    bsp_driver_sd.c (based on stm324x9i_eval_sd.c)
+  * @file    bsp_driver_sd.c for F4 (based on stm324x9i_eval_sd.c)
   * @brief   This file includes a generic uSD card driver.
   ******************************************************************************
   *
@@ -285,7 +285,6 @@ void BSP_SD_GetCardInfo(HAL_SD_CardInfoTypedef* CardInfo)
 
 /**
  * @brief  Detects if SD card is correctly plugged in the memory slot or not.
- * @param  None
  * @retval Returns if SD is detected or not
  */
 uint8_t BSP_SD_IsDetected(void)
@@ -294,8 +293,8 @@ uint8_t BSP_SD_IsDetected(void)
 
   /* USER CODE BEGIN 1 */
   /* user code can be inserted here */
-  /* USER CODE END 1 */    
-  
+  /* USER CODE END 1 */    	
+
   return status;
 }
 

@@ -306,6 +306,7 @@ void ws2812_displayAlerts(uint8_t led1, uint8_t led2, uint8_t led3){
 
 	uint8_t leds[] = {led1, led2, led3};
 
+
 	for (int i=0; i<3; i++){
 		switch (leds[i]){
 		case 0:

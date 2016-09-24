@@ -93,6 +93,7 @@ osMutexId currentDataMutexHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void Error_Handler(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_CAN1_Init(void);
@@ -145,7 +146,6 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_FATFS_Init();
   MX_SPI1_Init();
   MX_TIM6_Init();
   MX_SPI2_Init();
@@ -157,17 +157,37 @@ int main(void)
   volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
   UART1_ReceiveDataFromECU_DMA_init(dataPointer);
 
+//  gearDisplay_init();	//TODO Debug
+//  for (uint8_t i=0; i<200; i++){
+////  while (1){
+//	  gearDisplay_displayDigit(i, i%2);
+//	  HAL_Delay(500);
+//  }
+
   //TODO Debug CAN ponizej
-  hcan1.pTxMsg->DLC = 1;
-  hcan1.pTxMsg->Data[0] = 156;
-  hcan1.pTxMsg->StdId = 1;
-  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
-  hcan1.pTxMsg->IDE = CAN_ID_STD;
-  HAL_CAN_Transmit(&hcan1, 1000);
+//  hcan1.pTxMsg->DLC = 1;
+//  hcan1.pTxMsg->Data[0] = 156;
+//  hcan1.pTxMsg->StdId = 1;
+//  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
+//  hcan1.pTxMsg->IDE = CAN_ID_STD;
+//  HAL_CAN_Transmit(&hcan1, 1000);
+//
+//  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+//
+//  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
 
-  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
-
-  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
+//	canSensors_ReceiveDataFromSensors_init(&hcan1);
+//
+//  while (1){
+//
+//		CanRxMsgTypeDef msg;
+//		hcan1.pRxMsg = &msg;
+//
+//		HAL_StatusTypeDef status = HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+//
+//		volatile int a = 4;
+//
+//  }
 
   /* USER CODE END 2 */
 
@@ -201,20 +221,20 @@ int main(void)
   osThreadDef(saveActualBytesFromECUTask, StartSaveActualBytesFromECUTask, osPriorityHigh, 0, 128);
   saveActualBytesFromECUTaskHandle = osThreadCreate(osThread(saveActualBytesFromECUTask), NULL);
 
-  osThreadDef(saveActualBytesFromCanSensorsTask, StartSaveActualBytesFromCanSensorsTask, osPriorityHigh, 0, 128);
+  osThreadDef(saveActualBytesFromCanSensorsTask, StartSaveActualBytesFromCanSensorsTask, osPriorityHigh, 0, 1280);
   saveActualBytesFromCanSensorsTaskHandle = osThreadCreate(osThread(saveActualBytesFromCanSensorsTask), NULL);
 
-  //osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
-  //SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
+//  osThreadDef(SDCardSaverTask, StartSDCardSaverTask, osPriorityHigh, 0, 1280);
+//  SDCardSaverTaskHandle = osThreadCreate(osThread(SDCardSaverTask), NULL);
 
   osThreadDef(DashboardTask, StartDashboardTask, osPriorityHigh, 0, 1280);
   DashboardTaskHandle = osThreadCreate(osThread(DashboardTask), NULL);
 
+  osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityHigh, 0, 128);
+  ledSteeringWheelTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
+
   osThreadDef(ledBlinkingTask, StartLedBlinkingTask, osPriorityNormal, 0, 128);
   ledBlinkingTaskHandle = osThreadCreate(osThread(ledBlinkingTask), NULL);
-
-  osThreadDef(LEDSteeringWheelTask, StartLEDSteeringWheelTask, osPriorityHigh, 0, 1280);
-  ledSteeringWheelTaskHandle = osThreadCreate(osThread(LEDSteeringWheelTask), NULL);
 
   /* USER CODE END RTOS_THREADS */
 
@@ -224,7 +244,6 @@ int main(void)
  
 
   /* Start scheduler */
-
   osKernelStart();
   
   /* We should never get here as control is now taken by the scheduler */
@@ -251,7 +270,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
-  __PWR_CLK_ENABLE();
+  __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
@@ -265,7 +284,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -273,11 +295,17 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
   PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
@@ -288,27 +316,30 @@ void SystemClock_Config(void)
 }
 
 /* CAN1 init function */
-void MX_CAN1_Init(void)
+static void MX_CAN1_Init(void)
 {
 
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 21;
+  hcan1.Init.Prescaler = 42;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SJW = CAN_SJW_2TQ;
-  hcan1.Init.BS1 = CAN_BS1_9TQ;
-  hcan1.Init.BS2 = CAN_BS2_6TQ;
+  hcan1.Init.SJW = CAN_SJW_3TQ;
+  hcan1.Init.BS1 = CAN_BS1_16TQ;
+  hcan1.Init.BS2 = CAN_BS2_8TQ;
   hcan1.Init.TTCM = DISABLE;
   hcan1.Init.ABOM = DISABLE;
   hcan1.Init.AWUM = DISABLE;
   hcan1.Init.NART = DISABLE;
   hcan1.Init.RFLM = DISABLE;
   hcan1.Init.TXFP = DISABLE;
-  HAL_CAN_Init(&hcan1);
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* RTC init function */
-void MX_RTC_Init(void)
+static void MX_RTC_Init(void)
 {
 
   RTC_TimeTypeDef sTime;
@@ -323,30 +354,42 @@ void MX_RTC_Init(void)
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  HAL_RTC_Init(&hrtc);
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   sTime.Hours = 0x0;
   sTime.Minutes = 0x0;
   sTime.Seconds = 0x0;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  HAL_RTC_SetTime(&hrtc, &sTime, FORMAT_BCD);
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   sDate.WeekDay = RTC_WEEKDAY_MONDAY;
   sDate.Month = RTC_MONTH_JANUARY;
   sDate.Date = 0x1;
   sDate.Year = 0x0;
 
-  HAL_RTC_SetDate(&hrtc, &sDate, FORMAT_BCD);
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
     /**Enable the TimeStamp 
     */
-  HAL_RTCEx_SetTimeStamp(&hrtc, RTC_TIMESTAMPEDGE_RISING, RTC_TIMESTAMPPIN_PC13);
+  if (HAL_RTCEx_SetTimeStamp(&hrtc, RTC_TIMESTAMPEDGE_RISING, RTC_TIMESTAMPPIN_DEFAULT) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* SDIO init function */
-void MX_SDIO_SD_Init(void)
+static void MX_SDIO_SD_Init(void)
 {
 
   hsd.Instance = SDIO;
@@ -360,7 +403,7 @@ void MX_SDIO_SD_Init(void)
 }
 
 /* SPI1 init function */
-void MX_SPI1_Init(void)
+static void MX_SPI1_Init(void)
 {
 
   hspi1.Instance = SPI1;
@@ -372,15 +415,18 @@ void MX_SPI1_Init(void)
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 10;
-  HAL_SPI_Init(&hspi1);
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* SPI2 init function */
-void MX_SPI2_Init(void)
+static void MX_SPI2_Init(void)
 {
 
   hspi2.Instance = SPI2;
@@ -390,17 +436,20 @@ void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; //TODO Debug
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLED;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 10;
-  HAL_SPI_Init(&hspi2);
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* TIM6 init function */
-void MX_TIM6_Init(void)
+static void MX_TIM6_Init(void)
 {
 
   TIM_MasterConfigTypeDef sMasterConfig;
@@ -409,16 +458,22 @@ void MX_TIM6_Init(void)
   htim6.Init.Prescaler = 83;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 0xFFFF;
-  HAL_TIM_Base_Init(&htim6);
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_ENABLE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig);
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* USART1 init function */
-void MX_USART1_UART_Init(void)
+static void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
@@ -429,12 +484,15 @@ void MX_USART1_UART_Init(void)
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart1);
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /* USART2 init function */
-void MX_USART2_UART_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
   huart2.Instance = USART2;
@@ -445,26 +503,33 @@ void MX_USART2_UART_Init(void)
   huart2.Init.Mode = UART_MODE_TX_RX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart2);
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
 }
 
 /** 
   * Enable DMA controller clock
   */
-void MX_DMA_Init(void) 
+static void MX_DMA_Init(void) 
 {
   /* DMA controller clock enable */
-  __DMA1_CLK_ENABLE();
-  __DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
+  /* DMA1_Stream6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+  /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  /* DMA2_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
 
@@ -477,18 +542,18 @@ void MX_DMA_Init(void)
         * EVENT_OUT
         * EXTI
 */
-void MX_GPIO_Init(void)
+static void MX_GPIO_Init(void)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
-  __GPIOE_CLK_ENABLE();
-  __GPIOC_CLK_ENABLE();
-  __GPIOH_CLK_ENABLE();
-  __GPIOA_CLK_ENABLE();
-  __GPIOB_CLK_ENABLE();
-  __GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin|WS2812_MultiSelect_2_Pin, GPIO_PIN_RESET);
@@ -509,21 +574,21 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = GearDisplay_ChipSelect_Pin|WS2812_MultiSelect_1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : WS2812_MultiSelect_2_Pin */
   GPIO_InitStruct.Pin = WS2812_MultiSelect_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(WS2812_MultiSelect_2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : OTG_FS_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(OTG_FS_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
@@ -536,7 +601,7 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OLED_ChipSelect_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(OLED_ChipSelect_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Dash_Button_Pin */
@@ -549,7 +614,7 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = OLED_DC_Pin|OLED_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BOOT1_Pin */
@@ -562,7 +627,7 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SD_Card_Select_Pin */
@@ -609,7 +674,8 @@ void StartSaveActualBytesFromECUTask(void const * argument){
 
 void StartSaveActualBytesFromCanSensorsTask(void const * argument){
 
-	canSensors_ReceiveDataFromSensors_init();
+	canSensors_ReceiveDataFromSensors_init(&hcan1);
+	canSensors_ReceiveDataFromSensors_Start();
 
 	TickType_t xLastWakeTime = osKernelSysTick();
 
@@ -699,10 +765,11 @@ void StartDashboardTask(void const * argument){
 
 	dash_init();
 	gearDisplay_init();
+
 	while(1){
 		if (lastDashboardRefreshCouter%10==0){
 			dash_displayCurrentData(actualDisplayingValueChannelIndex);
-			dash_displayActualGear(); //TODO sensor doesn't work
+			dash_displayActualGear();
 			lastDashboardRefreshCouter=0;
 		}
 		if (dash_updateButtonValue()){
@@ -776,8 +843,23 @@ void StartLEDSteeringWheelTask(void const * argument){
 			led1_number = 4;
 		}
 
+		uint8_t led2_number = 0;
+		value = getCurrentDataForChannel(ECU_OIL_PRESSURE);
+
+		if (value<DataTypes_lowAlert[ECU_OIL_PRESSURE]){
+			led2_number = 4;
+		}
+
+		uint8_t led3_number = 0;
+		value = getCurrentDataForChannel(SENSOR_NEUTRAL);
+
+		if (value > 0){
+			led3_number = 1;
+		}
+
+
 		DelayMicroseconds(500);
-		ws2812_displayAlerts(led1_number, 0, 0);
+		ws2812_displayAlerts(led3_number, led2_number, led1_number);
 
 		osDelayUntil((uint32_t*) &xLastWakeTime, 50);
 	}
@@ -800,6 +882,42 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END 5 */ 
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM14 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+/* USER CODE BEGIN Callback 0 */
+
+/* USER CODE END Callback 0 */
+  if (htim->Instance == TIM14) {
+    HAL_IncTick();
+  }
+/* USER CODE BEGIN Callback 1 */
+
+/* USER CODE END Callback 1 */
+}
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler */
+  /* User can add his own implementation to report the HAL error return state */
+  while(1) 
+  {
+  }
+  /* USER CODE END Error_Handler */ 
 }
 
 #ifdef USE_FULL_ASSERT

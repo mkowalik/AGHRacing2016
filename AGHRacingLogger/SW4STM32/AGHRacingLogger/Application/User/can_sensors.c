@@ -17,11 +17,17 @@ static volatile CanSensorsData receivedSensorsData[CAN_SENSORS_BUFFER_SIZE];
 static CAN_HandleTypeDef* hcan_ptr;
 static volatile uint16_t canSensorsDataLeftIndex = 0;
 static volatile uint16_t canSensorsDataRightIndex = 0;
+static uint8_t can_stopped = 0;
 
 #define CAN_SENSOR_CHANNEL_NEUTRAL	256
 #define CAN_SENSOR_CHANNEL_GEAR		257
 
+//#define CAN_SENSOR_CHANNEL_MINVALUE	CAN_SENSOR_CHANNEL_NEUTRAL
+//#define CAN_SENSOR_CHANNEL_MAXVALUE	CAN_SENSOR_CHANNEL_NEUTRAL+1
+
 extern osMutexId currentDataMutexHandle;
+
+CanRxMsgTypeDef rx_msg;
 
 void canSensors_ReceiveDataFromSensors_init(CAN_HandleTypeDef* hcan_ptr_arg){
 
@@ -29,9 +35,25 @@ void canSensors_ReceiveDataFromSensors_init(CAN_HandleTypeDef* hcan_ptr_arg){
 
 	HAL_StatusTypeDef status;
 
+	CAN_FilterConfTypeDef sFilterConfig;
+	sFilterConfig.FilterNumber = 0;
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	sFilterConfig.FilterIdHigh = 0x0000;
+	sFilterConfig.FilterIdLow = 0x0000;
+	sFilterConfig.FilterMaskIdHigh = 0x0000;
+	sFilterConfig.FilterMaskIdLow = 0x0000;
+	sFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+	sFilterConfig.FilterActivation = ENABLE;
+	sFilterConfig.BankNumber = 0;
+
+	HAL_CAN_ConfigFilter(hcan_ptr, &sFilterConfig);
+
+	hcan_ptr->pRxMsg = &rx_msg;
+
 	do {
-		status = HAL_CAN_Receive(hcan_ptr, CAN_FIFO0, 50);
-		HAL_CAN_IRQHandler(hcan_ptr);
+		status = HAL_CAN_Receive(hcan_ptr, CAN_FIFO0, 150);
+//		HAL_CAN_IRQHandler(hcan_ptr);
 	} while ((status!=HAL_OK && status!=HAL_TIMEOUT) || (hcan_ptr->ErrorCode != HAL_CAN_ERROR_NONE));
 
 }
@@ -46,18 +68,11 @@ void canSensors_saveCurrentData(){
 
 	while (canSensorsDataLeftIndex <canSensorsDataRightIndex){
 
-		CanSensorsData actCanSensorData = receivedSensorsData[canSensorsDataLeftIndex];
-
-		uint8_t checksum = ((uint16_t)actCanSensorData.channelH + actCanSensorData.channelL + actCanSensorData.idChar + actCanSensorData.valueH + actCanSensorData.valueL) % 256;
-
-		if ((actCanSensorData.idChar != CAN_SENSOR_ID_CHAR_VALUE) || (actCanSensorData.checksum!= checksum)){
-			canSensorsDataLeftIndex++;
-			continue;
-		}
+		CanSensorsData actCanSensorData = receivedSensorsData[canSensorsDataLeftIndex%CAN_SENSORS_BUFFER_SIZE];
 
 		uint8_t loggedDataChannel = 0;
 
-		switch (actCanSensorData.channel){
+		switch (actCanSensorData.channelId){
 			case CAN_SENSOR_CHANNEL_NEUTRAL:
 				loggedDataChannel = SENSOR_NEUTRAL;
 				break;
@@ -68,7 +83,6 @@ void canSensors_saveCurrentData(){
 				canSensorsDataLeftIndex++;
 				return;
 		}
-
 
 		/** Take mutex for current data **/
 		if (osMutexWait(currentDataMutexHandle, 10)!=osOK){
@@ -92,25 +106,33 @@ void canSensors_saveCurrentData(){
 
 	}
 
+	if (can_stopped){
+		can_stopped = 0;
+		HAL_CAN_Receive_IT(hcan_ptr, CAN_FIFO0);
+	}
+
 }
+
+uint32_t counter = 0;
 
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 
-	CanRxMsgTypeDef* msg = hcan->pRxMsg;
+	if ((rx_msg.IDE==CAN_ID_STD) && (rx_msg.RTR == CAN_RTR_DATA) && (rx_msg.DLC == BYTES_IN_SENSORS_FRAME)){
 
-	if ((msg->RTR == CAN_RTR_DATA) && (msg->DLC != BYTES_IN_SENSORS_FRAME)){
-
-		receivedSensorsData[canSensorsDataRightIndex].channelH = msg->Data[0];
-		receivedSensorsData[canSensorsDataRightIndex].channelL = msg->Data[1];
-		receivedSensorsData[canSensorsDataRightIndex].idChar = msg->Data[2];
-		receivedSensorsData[canSensorsDataRightIndex].valueH = msg->Data[3];
-		receivedSensorsData[canSensorsDataRightIndex].valueL = msg->Data[4];
-		receivedSensorsData[canSensorsDataRightIndex].checksum = msg->Data[5];
+		receivedSensorsData[canSensorsDataRightIndex%CAN_SENSORS_BUFFER_SIZE].channelId = rx_msg.StdId;
+		receivedSensorsData[canSensorsDataRightIndex%CAN_SENSORS_BUFFER_SIZE].valueL = rx_msg.Data[0];
+		receivedSensorsData[canSensorsDataRightIndex%CAN_SENSORS_BUFFER_SIZE].valueH = rx_msg.Data[1];
 
 		canSensorsDataRightIndex++;
 
+		counter++;
+
 	}
 
-	HAL_CAN_Receive_IT(hcan_ptr, CAN_FIFO0);
+	if (canSensorsDataRightIndex - canSensorsDataLeftIndex < CAN_SENSORS_BUFFER_SIZE){
+		HAL_CAN_Receive_IT(hcan_ptr, CAN_FIFO0);
+	} else {
+		can_stopped = 1;
+	}
 
 }
