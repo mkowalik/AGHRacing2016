@@ -3,6 +3,8 @@
 #include "string.h"
 #include "mxconstants.h"
 #include "delay_timer6.h"
+#include "logged_data_types.h"
+#include "current_data_provider.h"
 
 extern SPI_HandleTypeDef hspi2;
 
@@ -197,6 +199,12 @@ static uint8_t LED3_Alert_number_prev=0;
 
 static uint8_t displayRPMEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
+/**
+ * Argument uint8_t value:
+ * 0    - LEDs off
+ * 1-12 - given number of LEDs turned on with proper color
+ * >12  - all LEDs red on
+ */
 void ws2812_displayRPM(uint8_t value){
 
 	displayRPMEventCounter = (displayRPMEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
@@ -229,6 +237,13 @@ void ws2812_displayRPM(uint8_t value){
 
 static uint8_t displayCLTEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
+/**
+ * Argument uint8_t value:
+ * 0    - LEDs off
+ * 1    - first LED blue
+ * 2-6  - given number of LEDs -1 turned on with proper color
+ * >6   - all LEDs red on
+ */
 void ws2812_displayCLT(uint8_t value){
 
 	displayCLTEventCounter = (displayCLTEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
@@ -270,6 +285,11 @@ void ws2812_displayCLT(uint8_t value){
 
 static uint8_t displayFuelEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
+/**
+ * Argument uint8_t value:
+ * 0    - LEDs off
+ * 1-5  - given number of LEDs turned on with proper color
+ */
 void ws2812_displayFuel(uint8_t value){
 
 	displayFuelEventCounter = (displayFuelEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
@@ -298,6 +318,14 @@ void ws2812_displayFuel(uint8_t value){
 
 static uint8_t displayAlertsEventCounter = REFRESH_LEDS_CYCLES_NUMBER-1;
 
+/**
+ * Value meaning for every uint8_t led1, led2, led3 arguments:
+ * 0 - no alert
+ * 1 - blue
+ * 2 - green
+ * 3 - yellow
+ * >3 - red
+ */
 void ws2812_displayAlerts(uint8_t led1, uint8_t led2, uint8_t led3){
 
 	displayAlertsEventCounter = (displayAlertsEventCounter+1)%REFRESH_LEDS_CYCLES_NUMBER;
@@ -343,5 +371,80 @@ void ws2812_displayAlerts(uint8_t led1, uint8_t led2, uint8_t led3){
 }
 
 
+#define RPM_LED_NUMBER	13
+/*  								 		     GREEN  GREEN  GREEN  GREEN  BLUE   BLUE   BLUE   BLUE   RED    RED    RED    RED 	 ALL RED 		*/
+const uint16_t rpm_led_values[RPM_LED_NUMBER] = {1000, 7000,  7500,  8000,  8500,  9000,  9500,  10000,  10500, 11000, 11500, 12000,   12500 };
 
 
+#define CLT_LED_NUMBER	6
+/*  								 			 GREEN  GREEN  GREEN  YELLOW  RED	ALL RED*/
+const uint16_t clt_led_values[CLT_LED_NUMBER] = {60,    70,    80,    85,     90,        95};
+
+void ws2812_displayDrivingWheelLEDs(){
+
+	uint8_t led_number = 0;
+	uint16_t value = getCurrentDataForChannel(ECU_RPM);
+
+	while(led_number<RPM_LED_NUMBER && value >= rpm_led_values[led_number]){
+		led_number++;
+	}
+	if (value > DataTypes_highAlert[ECU_RPM]){
+		led_number = RPM_LED_NUMBER;
+	}
+
+	DelayMicroseconds(500);
+	ws2812_displayRPM(led_number);
+
+
+	led_number = 0;
+	value = getCurrentDataForChannel(ECU_CLT);
+
+	while (led_number<CLT_LED_NUMBER && value >= clt_led_values[led_number]){
+		led_number++;
+	}
+	led_number++;
+	if (value > DataTypes_highAlert[ECU_CLT]){
+		led_number = CLT_LED_NUMBER+1;
+	} else if (value < DataTypes_lowAlert[ECU_CLT]){
+		led_number = 1;
+	}
+	DelayMicroseconds(500);
+	ws2812_displayCLT(led_number);
+
+
+	DelayMicroseconds(500);
+	ws2812_displayFuel(0);
+
+}
+
+void ws2812_displayDashboardLEDs(){
+
+	uint8_t led1_number = 0;
+	uint16_t value = getCurrentDataForChannel(ECU_BATT);
+
+	if (value<DataTypes_lowAlert[ECU_BATT] + 1*DataTypes_divider[ECU_BATT]){
+		led1_number = 3;
+	}
+	if (value<DataTypes_lowAlert[ECU_BATT]){
+		led1_number = 4;
+	}
+
+	uint8_t led2_number = 0;
+	value = getCurrentDataForChannel(ECU_OIL_PRESSURE);
+
+	if (value<DataTypes_lowAlert[ECU_OIL_PRESSURE]){
+		led2_number = 4;
+	}
+
+	uint8_t led3_number = 0;
+	value = getCurrentDataForChannel(SENSOR_NEUTRAL);
+
+	if (value > 0){
+		led3_number = 1;
+	}
+
+
+	DelayMicroseconds(500);
+	ws2812_displayAlerts(led3_number, led2_number, led1_number);
+
+}

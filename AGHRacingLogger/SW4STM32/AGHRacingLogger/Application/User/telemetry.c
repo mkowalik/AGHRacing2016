@@ -1,6 +1,6 @@
 #include "telemetry.h"
 #include "current_data_provider.h"
-#include "uart_wrapper.h"
+#include "uart_debug_wrapper.h"
 #include "logged_data_types.h"
 #include "string.h"
 #include "stdio.h"

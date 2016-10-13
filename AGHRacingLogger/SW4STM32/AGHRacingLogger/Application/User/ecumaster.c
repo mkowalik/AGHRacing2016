@@ -5,7 +5,9 @@
 #include "cmsis_os.h"
 #include "mxconstants.h"
 #include "stm32f4xx_hal.h"
-#include "uart_wrapper.h"
+#include "stm32f4xx.h"
+#include "stm32f4xx_it.h"
+#include "uart_debug_wrapper.h"
 
 #define ECU_CHANNEL_RPM 1
 #define ECU_CHANNEL_MAP 2
@@ -45,7 +47,69 @@ static volatile uint8_t receivedECUBytes[ECU_BUFFER_SIZE];
 static volatile uint16_t ECUDataLeftIndex = 0;
 static volatile uint16_t ECUDataRightIndex = 0;
 
+volatile uint8_t* ecuDataPointer;
+
 extern osMutexId currentDataMutexHandle;
+
+extern UART_HandleTypeDef huart1;
+static uint8_t uart1_stopped = 1;
+
+void UART1_ITEnable(){
+	  __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
+}
+
+void UART1_ITDisable(){
+	  __HAL_UART_DISABLE_IT(&huart1, UART_IT_RXNE);
+}
+
+void UART1_Stop(){
+	if (uart1_stopped) return;
+	UART1_ITDisable();
+	HAL_StatusTypeDef status = HAL_UART_DMAStop(&huart1);
+	if (status!=HAL_OK){
+	  while(1){
+		  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+		  HAL_Delay(100);
+	  }
+	}
+	uart1_stopped = 1;
+}
+
+void ECU_receiveData(){
+	if (!uart1_stopped) return;
+
+	HAL_UART_StateTypeDef state = huart1.gState;
+
+	while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_TX)){	//Wait for UART1 controller
+	  state = huart1.gState;
+	}													//TODO jakos zrobic zeby bylo non-blocking
+
+	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuDataPointer, ECU_BUFFER_SIZE);	//TODO czy to nie powinno byc po linijce UART1_IT_Enable
+	uart1_stopped = 0;
+	__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);		//RXNE = Read Data Register Not Empty
+	UART1_ITEnable();									//Enable interrupt when byte is saved by DMA, used by ECU_receivedByteNotification function.
+
+	if (status!=HAL_OK){
+	  while(1){
+		  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+		  HAL_Delay(100);
+	  }
+	}
+}
+
+void ECU_init(){
+
+	ecuDataPointer = ECU_getNextReceivedBytePointer();
+
+	HAL_StatusTypeDef status;
+	uint8_t tmpData[5];
+	do {
+		status = HAL_UART_Receive(&huart1, tmpData, 1, 50);
+		HAL_UART_IRQHandler(&huart1);
+	} while ((status!=HAL_OK && status!=HAL_TIMEOUT) || (huart1.ErrorCode != HAL_UART_ERROR_NONE));
+
+}
+
 
 void ECU_receivedByteNotification(){
 	if (ECUDataRightIndex-ECUDataLeftIndex+1>ECU_BUFFER_SIZE){
@@ -229,5 +293,5 @@ void ECU_saveCurrentData(void const * args){
 
 	}
 
-	UART1_ReceiveDataFromECU_DMA();
+	ECU_receiveData();
 }

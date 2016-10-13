@@ -43,7 +43,7 @@
 #include "data_snapshot_maker.h"
 #include "ecumaster.h"
 #include "sd_card_saver.h"
-#include "uart_wrapper.h"
+#include "uart_debug_wrapper.h"
 #include "stm32f407xx.h"
 #include "freertos.h"
 #include "dashboard.h"
@@ -51,6 +51,7 @@
 #include "delay_timer6.h"
 #include "ws2812_driver.h"
 #include "can_sensors.h"
+#include "buttons.h"
 
 /* USER CODE END Includes */
 
@@ -153,9 +154,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   DataTypes_initDefaults();
-
-  volatile uint8_t* dataPointer = ECU_getNextReceivedBytePointer();
-  UART1_ReceiveDataFromECU_DMA_init(dataPointer);
 
 //  gearDisplay_init();	//TODO Debug
 //  for (uint8_t i=0; i<200; i++){
@@ -659,9 +657,8 @@ void StartMakeDataSnaphotTask(void const * argument){
 
 void StartSaveActualBytesFromECUTask(void const * argument){
 
-//	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, testData, 256);
-
-	UART1_ReceiveDataFromECU_DMA();
+	ECU_init();
+	ECU_receiveData();
 
 	TickType_t xLastWakeTime = osKernelSysTick();
 
@@ -755,40 +752,24 @@ void StartSDCardSaverTask(void const * argument){
 
 }
 
-uint8_t actualDisplayingValueChannelIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
 uint32_t lastDashboardRefreshCouter;
 
 void StartDashboardTask(void const * argument){
 
 	TickType_t xLastWakeTime = osKernelSysTick();
-	lastDashboardRefreshCouter = 0;
 
 	dash_init();
 	gearDisplay_init();
 
 	while(1){
-		if (lastDashboardRefreshCouter%10==0){
-			dash_displayCurrentData(actualDisplayingValueChannelIndex);
-			dash_displayActualGear();
-			lastDashboardRefreshCouter=0;
+		if (buttons_updateButtonValue()){
+			dash_nextDisplayingValueChannelIndexNotification();
 		}
-		if (dash_updateButtonValue()){
-			actualDisplayingValueChannelIndex=(actualDisplayingValueChannelIndex+1)%NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS;
-		}
-		lastDashboardRefreshCouter++;
-		osDelayUntil((uint32_t*) &xLastWakeTime, 20);
+		dash_displayCurrentData();
+		dash_displayActualGear();
+		osDelayUntil((uint32_t*) &xLastWakeTime, 50);
 	}
 }
-
-
-#define RPM_LED_NUMBER	13
-/*  								 		     GREEN  GREEN  GREEN  GREEN  BLUE   BLUE   BLUE   BLUE   RED    RED    RED    RED 	 ALL RED 		*/
-const uint16_t rpm_led_values[RPM_LED_NUMBER] = {1000, 7000,  7500,  8000,  8500,  9000,  9500,  10000,  10500, 11000, 11500, 12000,   12500 };
-
-
-#define CLT_LED_NUMBER	6
-/*  								 			 GREEN  GREEN  GREEN  YELLOW  RED	ALL RED*/
-const uint16_t clt_led_values[CLT_LED_NUMBER] = {60,    70,    80,    85,     90,        95};
 
 
 void StartLEDSteeringWheelTask(void const * argument){
@@ -799,67 +780,8 @@ void StartLEDSteeringWheelTask(void const * argument){
 
 	while(1){
 
-		uint8_t led_number = 0;
-		uint16_t value = getCurrentDataForChannel(ECU_RPM);
-
-		while(led_number<RPM_LED_NUMBER && value >= rpm_led_values[led_number]){
-			led_number++;
-		}
-		if (value > DataTypes_highAlert[ECU_RPM]){
-			led_number = RPM_LED_NUMBER;
-		}
-
-		DelayMicroseconds(500);
-		ws2812_displayRPM(led_number);
-
-
-		led_number = 0;
-		value = getCurrentDataForChannel(ECU_CLT);
-
-		while (led_number<CLT_LED_NUMBER && value >= clt_led_values[led_number]){
-			led_number++;
-		}
-		led_number++;
-		if (value > DataTypes_highAlert[ECU_CLT]){
-			led_number = CLT_LED_NUMBER+1;
-		} else if (value < DataTypes_lowAlert[ECU_CLT]){
-			led_number = 1;
-		}
-		DelayMicroseconds(500);
-		ws2812_displayCLT(led_number);
-
-
-		DelayMicroseconds(500);
-		ws2812_displayFuel(0);
-
-
-		uint8_t led1_number = 0;
-		value = getCurrentDataForChannel(ECU_BATT);
-
-		if (value<DataTypes_lowAlert[ECU_BATT] + 1*DataTypes_divider[ECU_BATT]){
-			led1_number = 3;
-		}
-		if (value<DataTypes_lowAlert[ECU_BATT]){
-			led1_number = 4;
-		}
-
-		uint8_t led2_number = 0;
-		value = getCurrentDataForChannel(ECU_OIL_PRESSURE);
-
-		if (value<DataTypes_lowAlert[ECU_OIL_PRESSURE]){
-			led2_number = 4;
-		}
-
-		uint8_t led3_number = 0;
-		value = getCurrentDataForChannel(SENSOR_NEUTRAL);
-
-		if (value > 0){
-			led3_number = 1;
-		}
-
-
-		DelayMicroseconds(500);
-		ws2812_displayAlerts(led3_number, led2_number, led1_number);
+		ws2812_displayDrivingWheelLEDs();
+		ws2812_displayDashboardLEDs();
 
 		osDelayUntil((uint32_t*) &xLastWakeTime, 50);
 	}

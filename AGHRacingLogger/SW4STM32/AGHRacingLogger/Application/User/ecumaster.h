@@ -20,6 +20,8 @@ typedef struct {
 #define ECU_BUFFER_SIZE 	(256 * ECU_BYTES_IN_FRAME)
 #define ECU_ID_CHAR_VALUE		0xA3
 
+void ECU_init();
+void ECU_receiveData();
 void ECU_receivedByteNotification();
 volatile uint16_t ECU_getBytesRightIndex();
 volatile uint16_t ECU_getBytesLeftIndex();

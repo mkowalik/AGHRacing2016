@@ -9,7 +9,8 @@
 #include "gear_display.h"
 
 static uint16_t lastDisplayedValue;
-static uint8_t lastDisplayedFunctionIndex;
+static uint8_t lastDisplayedFunctionIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
+static uint8_t actualDisplayingValueChannelIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
 
 static uint16_t lastDisplayedGearValue;
 
@@ -64,7 +65,6 @@ void display_description(uint8_t channel){
 
 void dash_init(){
 
-	lastDisplayedFunctionIndex = DEFAULT_DASHBOARD_FUNCTION_INDEX;
 	lastDisplayedValue = getCurrentDataForChannel(avaliableFunctions[lastDisplayedFunctionIndex]);
 
 	lastDisplayedGearValue = 0;
@@ -83,41 +83,26 @@ void clear_description(){
 	ssd1306_fill_screen(0, 48, 127, 63, 0);
 }
 
-void dash_displayCurrentData(uint8_t channelIndex){
+void dash_nextDisplayingValueChannelIndexNotification(){
+	actualDisplayingValueChannelIndex=(actualDisplayingValueChannelIndex+1)%NUMBER_OF_AVAILABLE_DASHBOARD_CHANNELS;
+}
 
-	uint16_t data = getCurrentDataForChannel(avaliableFunctions[channelIndex]);
+void dash_displayCurrentData(){
 
-	if (lastDisplayedValue!=data || lastDisplayedFunctionIndex!=channelIndex){
+	uint16_t data = getCurrentDataForChannel(avaliableFunctions[actualDisplayingValueChannelIndex]);
 
-		display_value(data, avaliableFunctions[channelIndex]);
+	if (lastDisplayedValue!=data || lastDisplayedFunctionIndex!=actualDisplayingValueChannelIndex){
 
-		if (lastDisplayedFunctionIndex!=channelIndex){
+		display_value(data, avaliableFunctions[actualDisplayingValueChannelIndex]);
+
+		if (lastDisplayedFunctionIndex!=actualDisplayingValueChannelIndex){
 			clear_description();
-			display_description(avaliableFunctions[channelIndex]);
+			display_description(avaliableFunctions[actualDisplayingValueChannelIndex]);
 		}
 	}
 
-	lastDisplayedFunctionIndex = channelIndex;
+	lastDisplayedFunctionIndex = actualDisplayingValueChannelIndex;
 	lastDisplayedValue=data;
-
-}
-
-static uint32_t lastButtonResetTick = 0;
-static uint32_t lastButtonSetTick = 0;
-
-uint8_t dash_updateButtonValue(){
-	GPIO_PinState pinState = HAL_GPIO_ReadPin(Dash_Button2_GPIO_Port, Dash_Button2_Pin);
-	if (pinState==GPIO_PIN_RESET){
-		lastButtonResetTick = HAL_GetTick();
-	} else {
-		lastButtonSetTick = HAL_GetTick();
-	}
-
-	if (((int32_t)lastButtonResetTick-(int32_t)lastButtonSetTick)>50){
-		lastButtonSetTick = lastButtonResetTick+500;
-		return 1;
-	}
-	return 0;
 
 }
 
