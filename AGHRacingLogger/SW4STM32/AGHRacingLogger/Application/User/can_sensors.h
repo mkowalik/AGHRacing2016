@@ -5,8 +5,8 @@
  *      Author: kowalik
  */
 
-#ifndef CAN_SENSORS_H_
-#define CAN_SENSORS_H_
+#ifndef __can_sensors_H_
+#define __can_sensors_H_
 
 #include <stdint.h>
 

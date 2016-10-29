@@ -1,0 +1,25 @@
+
+  //TODO Debug CAN ponizej
+//  hcan1.pTxMsg->DLC = 1;
+//  hcan1.pTxMsg->Data[0] = 156;
+//  hcan1.pTxMsg->StdId = 1;
+//  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
+//  hcan1.pTxMsg->IDE = CAN_ID_STD;
+//  HAL_CAN_Transmit(&hcan1, 1000);
+//
+//  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+//
+//  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
+
+//	canSensors_ReceiveDataFromSensors_init(&hcan1);
+//
+//  while (1){
+//
+//		CanRxMsgTypeDef msg;
+//		hcan1.pRxMsg = &msg;
+//
+//		HAL_StatusTypeDef status = HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
+//
+//		volatile int a = 4;
+//
+//  }

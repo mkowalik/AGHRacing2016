@@ -47,8 +47,6 @@ static volatile uint8_t receivedECUBytes[ECU_BUFFER_SIZE];
 static volatile uint16_t ECUDataLeftIndex = 0;
 static volatile uint16_t ECUDataRightIndex = 0;
 
-volatile uint8_t* ecuDataPointer;
-
 extern osMutexId currentDataMutexHandle;
 
 extern UART_HandleTypeDef huart1;
@@ -66,40 +64,34 @@ void UART1_Stop(){
 	if (uart1_stopped) return;
 	UART1_ITDisable();
 	HAL_StatusTypeDef status = HAL_UART_DMAStop(&huart1);
-	if (status!=HAL_OK){
-	  while(1){
-		  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-		  HAL_Delay(100);
-	  }
-	}
+	LOG_error_ifstatus("Error while UART1_Stop", status);
 	uart1_stopped = 1;
 }
 
 void ECU_receiveData(){
+
 	if (!uart1_stopped) return;
 
 	HAL_UART_StateTypeDef state = huart1.gState;
 
-	while ((state != HAL_UART_STATE_READY) && (state != HAL_UART_STATE_BUSY_TX)){	//Wait for UART1 controller
+	while (state != HAL_UART_STATE_READY){	//Wait for UART1 controller
 	  state = huart1.gState;
-	}													//TODO jakos zrobic zeby bylo non-blocking
+	}										//TODO jakos zrobic zeby bylo non-blocking
 
-	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, (uint8_t*)ecuDataPointer, ECU_BUFFER_SIZE);	//TODO czy to nie powinno byc po linijce UART1_IT_Enable
+	ECUDataLeftIndex = 0;
+	ECUDataRightIndex = 0;
+
 	uart1_stopped = 0;
+
 	__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);		//RXNE = Read Data Register Not Empty
 	UART1_ITEnable();									//Enable interrupt when byte is saved by DMA, used by ECU_receivedByteNotification function.
+	HAL_StatusTypeDef status = HAL_UART_Receive_DMA(&huart1, (uint8_t*)receivedECUBytes, ECU_BUFFER_SIZE);
 
-	if (status!=HAL_OK){
-	  while(1){
-		  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-		  HAL_Delay(100);
-	  }
-	}
+	LOG_error_ifstatus("Error while receiving data by UART1 DMA.", status);
+
 }
 
 void ECU_init(){
-
-	ecuDataPointer = ECU_getNextReceivedBytePointer();
 
 	HAL_StatusTypeDef status;
 	uint8_t tmpData[5];
@@ -137,13 +129,6 @@ volatile uint8_t* ECU_getNextReceivedBytePointer(){
 
 void ECU_saveCurrentData(void const * args){
 	while (ECUDataLeftIndex + ECU_BYTES_IN_FRAME <= ECUDataRightIndex){
-
-		if (ECUDataRightIndex-ECUDataLeftIndex > ECU_BUFFER_SIZE){
-			  while(1){
-				  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-				  HAL_Delay(50);
-			  }
-		}
 
 		ECUData actECUFrame;
 
@@ -259,8 +244,6 @@ void ECU_saveCurrentData(void const * args){
 			case ECU_CHANNEL_FUEL_LEVEL:
 				loggedDataChannel = ECU_FUEL_LEVEL;
 				break;
-//			case ECU_CHANNEL_SECONDARY_PULSE_WIDTH:
-//				loggedDataChannel =
 			default:
 				ECUDataLeftIndex+=5;//TODO
 				if (ECUDataLeftIndex>ECU_BUFFER_SIZE){

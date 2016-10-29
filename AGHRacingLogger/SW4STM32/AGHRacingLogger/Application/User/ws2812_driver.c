@@ -124,17 +124,77 @@ const uint8_t WS2812_FuelPattern[] = {
 
 	0b11011011, 0b01101101, 0b10110110, //GREEN
 	0b10010010, 0b01001001, 0b00100100,
-	0b10010010, 0b01001001, 0b00100100,};
+	0b10010010, 0b01001001, 0b00100100};
 
+const uint8_t WS2812_ResetPattern[] = {
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000,
+
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000,
+
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000,
+	0b00000000, 0b00000000, 0b00000000};
 
 uint8_t WS2812_CLTFuelActual[5*9];
 
 uint8_t WS2812_AlertActual[3*9];
 
 void ws2812_init(){
-	//TODO 50us low level state on every ws2812
 
-	DelayMicroseconds(500);
+	//Sending reset signal to every LED stripe
+
+
+	DelayMicroseconds(500);	//It's necessary for changing between WS2812 channels
+
+
+	while (HAL_SPI_GetState(&hspi2)!=HAL_SPI_STATE_READY); //wait for DMA
+
+	HAL_GPIO_WritePin(WS2812_MultiSelect_1_GPIO_Port, WS2812_MultiSelect_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WS2812_MultiSelect_2_GPIO_Port, WS2812_MultiSelect_2_Pin, GPIO_PIN_SET);
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_ResetPattern, 9*3);
+
+
+	DelayMicroseconds(500);	//It's necessary for changing between WS2812 channels
+
+
+	while (HAL_SPI_GetState(&hspi2)!=HAL_SPI_STATE_READY); //wait for DMA
+
+	HAL_GPIO_WritePin(WS2812_MultiSelect_1_GPIO_Port, WS2812_MultiSelect_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(WS2812_MultiSelect_2_GPIO_Port, WS2812_MultiSelect_2_Pin, GPIO_PIN_RESET);
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_ResetPattern, 9*3);
+
+
+	DelayMicroseconds(500);	//It's necessary for changing between WS2812 channels
+
+
+	while (HAL_SPI_GetState(&hspi2)!=HAL_SPI_STATE_READY); //wait for DMA
+
+	HAL_GPIO_WritePin(WS2812_MultiSelect_1_GPIO_Port, WS2812_MultiSelect_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(WS2812_MultiSelect_2_GPIO_Port, WS2812_MultiSelect_2_Pin, GPIO_PIN_SET);
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_ResetPattern, 9*3);
+
+
+	DelayMicroseconds(500);	//It's necessary for changing between WS2812 channels
+
+
+	while (HAL_SPI_GetState(&hspi2)!=HAL_SPI_STATE_READY); //wait for DMA
+
+	HAL_GPIO_WritePin(WS2812_MultiSelect_1_GPIO_Port, WS2812_MultiSelect_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WS2812_MultiSelect_2_GPIO_Port, WS2812_MultiSelect_2_Pin, GPIO_PIN_RESET);
+
+	HAL_SPI_Transmit_DMA(&hspi2, WS2812_ResetPattern, 9*3);
+
+
+	//Sending off values to every LED stripes
+
+	DelayMicroseconds(500);	//It's necessary for changing between WS2812 channels
 
 	for (uint8_t i=0; i<12; i++){
 		memcpy(WS2182_RPMActual+(i*9), WS2812_off, 9);

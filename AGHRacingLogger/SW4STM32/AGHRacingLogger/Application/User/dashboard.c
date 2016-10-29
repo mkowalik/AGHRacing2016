@@ -111,17 +111,14 @@ static uint16_t lastDisplayedNeutralValue;
 void dash_displayActualGear(){
 
 	uint16_t dataNeutral = getCurrentDataForChannel(SENSOR_NEUTRAL);
-//	uint16_t dataGear = getCurrentDataForChannel(ECU_GEAR);
 	uint16_t dataGear = getCurrentDataForChannel(SENSOR_GEAR);
 
-//	if ((dataNeutral!=lastDisplayedNeutralValue) || (dataGear!=lastDisplayedGearValue)){
-		if (dataNeutral>0){
-			gearDisplay_displayDigit(0, (dataNeutral>0));
-		} else {
-			gearDisplay_displayDigit(dataGear, (dataNeutral>0));
-		}
-		lastDisplayedNeutralValue = dataNeutral;
-		lastDisplayedGearValue = dataGear;
-//	}
+	if (dataNeutral>0){
+		gearDisplay_displayDigit(0, (dataNeutral>0));
+	} else {
+		gearDisplay_displayDigit(dataGear, (dataNeutral>0));
+	}
+	lastDisplayedNeutralValue = dataNeutral;
+	lastDisplayedGearValue = dataGear;
 
 }

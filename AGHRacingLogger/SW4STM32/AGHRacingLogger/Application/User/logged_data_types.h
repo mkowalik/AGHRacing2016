@@ -35,7 +35,6 @@
 #define ECU_CEL 33
 #define ECU_DELTA_FPR 29
 #define ECU_FUEL_LEVEL 30
-//#define ECU_SECONDARY_PULSE_WIDTH 7
 #define SENSOR_NEUTRAL 34
 #define SENSOR_GEAR 35
 

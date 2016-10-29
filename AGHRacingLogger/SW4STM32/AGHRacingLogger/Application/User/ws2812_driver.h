@@ -1,3 +1,6 @@
+#ifndef __ws2812_driver_H
+#define __ws2812_driver_H
+
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -6,3 +9,5 @@
 void ws2812_init();
 void ws2812_displayDrivingWheelLEDs();
 void ws2812_displayDashboardLEDs();
+
+#endif //__ws2812_driver_H

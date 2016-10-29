@@ -22,9 +22,6 @@ static uint8_t can_stopped = 0;
 #define CAN_SENSOR_CHANNEL_NEUTRAL	256
 #define CAN_SENSOR_CHANNEL_GEAR		257
 
-//#define CAN_SENSOR_CHANNEL_MINVALUE	CAN_SENSOR_CHANNEL_NEUTRAL
-//#define CAN_SENSOR_CHANNEL_MAXVALUE	CAN_SENSOR_CHANNEL_NEUTRAL+1
-
 extern osMutexId currentDataMutexHandle;
 
 CanRxMsgTypeDef rx_msg;
@@ -53,7 +50,6 @@ void canSensors_ReceiveDataFromSensors_init(CAN_HandleTypeDef* hcan_ptr_arg){
 
 	do {
 		status = HAL_CAN_Receive(hcan_ptr, CAN_FIFO0, 150);
-//		HAL_CAN_IRQHandler(hcan_ptr);
 	} while ((status!=HAL_OK && status!=HAL_TIMEOUT) || (hcan_ptr->ErrorCode != HAL_CAN_ERROR_NONE));
 
 }

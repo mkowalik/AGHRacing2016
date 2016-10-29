@@ -155,38 +155,6 @@ int main(void)
 
   DataTypes_initDefaults();
 
-//  gearDisplay_init();	//TODO Debug
-//  for (uint8_t i=0; i<200; i++){
-////  while (1){
-//	  gearDisplay_displayDigit(i, i%2);
-//	  HAL_Delay(500);
-//  }
-
-  //TODO Debug CAN ponizej
-//  hcan1.pTxMsg->DLC = 1;
-//  hcan1.pTxMsg->Data[0] = 156;
-//  hcan1.pTxMsg->StdId = 1;
-//  hcan1.pTxMsg->RTR = CAN_RTR_DATA;
-//  hcan1.pTxMsg->IDE = CAN_ID_STD;
-//  HAL_CAN_Transmit(&hcan1, 1000);
-//
-//  HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
-//
-//  CanRxMsgTypeDef* msg = hcan1.pRxMsg;
-
-//	canSensors_ReceiveDataFromSensors_init(&hcan1);
-//
-//  while (1){
-//
-//		CanRxMsgTypeDef msg;
-//		hcan1.pRxMsg = &msg;
-//
-//		HAL_StatusTypeDef status = HAL_CAN_Receive(&hcan1, CAN_FIFO0, 1000);
-//
-//		volatile int a = 4;
-//
-//  }
-
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -756,10 +724,10 @@ uint32_t lastDashboardRefreshCouter;
 
 void StartDashboardTask(void const * argument){
 
-	TickType_t xLastWakeTime = osKernelSysTick();
-
 	dash_init();
 	gearDisplay_init();
+
+	TickType_t xLastWakeTime = osKernelSysTick();
 
 	while(1){
 		if (buttons_updateButtonValue()){
@@ -774,9 +742,9 @@ void StartDashboardTask(void const * argument){
 
 void StartLEDSteeringWheelTask(void const * argument){
 
-	TickType_t xLastWakeTime = osKernelSysTick();
-
 	ws2812_init();
+
+	TickType_t xLastWakeTime = osKernelSysTick();
 
 	while(1){
 
@@ -836,9 +804,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler */
   /* User can add his own implementation to report the HAL error return state */
-  while(1) 
-  {
-  }
+	LOG_error("HAL Error");
   /* USER CODE END Error_Handler */ 
 }
 
