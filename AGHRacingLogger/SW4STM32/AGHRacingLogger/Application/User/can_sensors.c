@@ -12,6 +12,20 @@
 #include "error_logger.h"
 #include "current_data_provider.h"
 
+/**
+ * Data type held in receivedSensorsData tab.
+ */
+typedef struct {
+	uint32_t channelId;
+	union {
+		struct {
+			uint8_t valueL;
+			uint8_t valueH;
+		};
+		uint16_t value;
+	};
+} CanSensorsData;
+
 static volatile CanSensorsData receivedSensorsData[CAN_SENSORS_BUFFER_SIZE];
 
 static CAN_HandleTypeDef* hcan_ptr;

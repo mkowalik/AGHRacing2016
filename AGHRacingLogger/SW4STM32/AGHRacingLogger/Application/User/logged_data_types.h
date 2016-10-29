@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+
+/**
+ * All data channels available in this data-logger. Defines mapped for ints used as indexes.
+ */
+
 #define ECU_RPM 1
 #define ECU_MAP_SENSOR 2
 #define ECU_TPS 3
@@ -35,10 +40,11 @@
 #define ECU_CEL 33
 #define ECU_DELTA_FPR 29
 #define ECU_FUEL_LEVEL 30
+
 #define SENSOR_NEUTRAL 34
 #define SENSOR_GEAR 35
 
-#define CHANNEL_NUMBER 256
+#define CHANNEL_NUMBER 256	//Number of maximum number channels available.
 
 typedef enum {
 	DATA_NO_ALERT					= 0x00,
@@ -57,6 +63,9 @@ uint16_t DataTypes_highAlert[CHANNEL_NUMBER];
 char* DataTypes_unitString[CHANNEL_NUMBER];
 char* DataTypes_fullName[CHANNEL_NUMBER];
 
+/**
+ * Inits default values in tabs defined above.
+ */
 void DataTypes_initDefaults();
 
 #endif /* __logged_data_types_H */

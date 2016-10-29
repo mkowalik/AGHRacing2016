@@ -12,21 +12,19 @@
 
 #define BYTES_IN_SENSORS_FRAME		2
 #define CAN_SENSORS_BUFFER_SIZE		256
-
+/**
+ * Inits CAN transceiver.
+ */
 void canSensors_ReceiveDataFromSensors_init();
+
+/**
+ * Starts receiving messages and waits for new message interrupt.
+ */
 void canSensors_ReceiveDataFromSensors_Start();
+
+/**
+ * Main thread function. Saves data from temporary structure to current_data_provider.
+ */
 void canSensors_saveCurrentData();
-
-typedef struct {
-	uint32_t channelId;
-	union {
-		struct {
-			uint8_t valueL;
-			uint8_t valueH;
-		};
-		uint16_t value;
-	};
-} CanSensorsData;
-
 
 #endif /* APPLICATION_USER_CAN_SENSORS_H_ */
